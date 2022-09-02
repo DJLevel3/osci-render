@@ -35,9 +35,6 @@ public final class Line extends Shape {
       // Euclidean distance approximation based on octagonal boundary
       double dx = Math.abs(b.x - a.x);
       double dy = Math.abs(b.y - a.y);
-<<<<<<< HEAD
-=======
->>>>>>> d08c76b (Make Line.getLength() work (in 2 fewer lines))
 
       length = 0.41 * Math.min(dx, dy) + 0.941246 * Math.max(dx, dy);
     }
