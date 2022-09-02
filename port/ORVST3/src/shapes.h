@@ -2,10 +2,15 @@
 
 #include <vector>
 #include <cmath>
+#include <float.h>
 
 using std::vector;
 
+#include "ORVST3.h"
 #include "Vector2.h"
+#include "Line.h"
+#include "Bezier.h"
+#include "Ellipse.h"
 #include "Shape.h"
 
 class shapeHelper

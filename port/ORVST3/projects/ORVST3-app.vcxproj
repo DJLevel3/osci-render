@@ -323,6 +323,7 @@
     <ClInclude Include="..\ORVST3.h" />
     <ClInclude Include="..\ORVST3_DSP.h" />
     <ClInclude Include="..\resources\resource.h" />
+    <ClInclude Include="..\UserMath.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\Dependencies\IPlug\RTAudio\include\asio.cpp" />

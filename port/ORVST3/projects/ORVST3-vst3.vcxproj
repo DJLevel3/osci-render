@@ -329,6 +329,21 @@
     <ClInclude Include="..\..\..\..\..\IPlug\VST3\IPlugVST3_Parameter.h" />
     <ClInclude Include="..\..\..\..\..\IPlug\VST3\IPlugVST3_ProcessorBase.h" />
     <ClInclude Include="..\..\..\..\..\IPlug\VST3\IPlugVST3_View.h" />
+    <ClInclude Include="..\FFT.h" />
+    <ClInclude Include="..\src\Bezier.h" />
+    <ClInclude Include="..\src\Camera.h" />
+    <ClInclude Include="..\src\CameraDrawKernel.h" />
+    <ClInclude Include="..\src\Ellipse.h" />
+    <ClInclude Include="..\src\Line.h" />
+    <ClInclude Include="..\src\Line3D.h" />
+    <ClInclude Include="..\src\Shape.h" />
+    <ClInclude Include="..\src\ShapeFrameSource.h" />
+    <ClInclude Include="..\src\shapes.h" />
+    <ClInclude Include="..\src\utility.h" />
+    <ClInclude Include="..\src\Vector2.h" />
+    <ClInclude Include="..\src\Vector3.h" />
+    <ClInclude Include="..\src\WorldObject.h" />
+    <ClInclude Include="..\UserMath.h" />
     <ClInclude Include="..\ORVST3.h" />
     <ClInclude Include="..\ORVST3_DSP.h" />
     <ClInclude Include="..\resources\resource.h" />
@@ -394,7 +409,11 @@
     <ClCompile Include="..\..\..\..\..\IPlug\IPlugTimer.cpp" />
     <ClCompile Include="..\..\..\..\..\IPlug\VST3\IPlugVST3.cpp" />
     <ClCompile Include="..\..\..\..\..\IPlug\VST3\IPlugVST3_ProcessorBase.cpp" />
+    <ClCompile Include="..\FFT.cpp" />
     <ClCompile Include="..\ORVST3.cpp" />
+    <ClCompile Include="..\src\Ellipse.cpp" />
+    <ClCompile Include="..\src\Line.cpp" />
+    <ClCompile Include="..\src\shapes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\resources\main.rc" />

@@ -140,6 +140,16 @@
     <ClCompile Include="..\..\..\..\..\IGraphics\IGraphicsEditorDelegate.cpp">
       <Filter>IGraphics</Filter>
     </ClCompile>
+    <ClCompile Include="..\FFT.cpp" />
+    <ClCompile Include="..\src\shapes.cpp">
+      <Filter>shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Line.cpp">
+      <Filter>shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Ellipse.cpp">
+      <Filter>shapes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../config.h" />
@@ -373,6 +383,47 @@
       <Filter>IPlug</Filter>
     </ClInclude>
     <ClInclude Include="..\ORVST3_DSP.h" />
+    <ClInclude Include="..\UserMath.h" />
+    <ClInclude Include="..\FFT.h" />
+    <ClInclude Include="..\src\shapes.h">
+      <Filter>shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Vector2.h">
+      <Filter>shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shape.h">
+      <Filter>shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Line.h">
+      <Filter>shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Bezier.h">
+      <Filter>shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Ellipse.h">
+      <Filter>shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ShapeFrameSource.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Vector3.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utility.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Line3D.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Camera.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CameraDrawKernel.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\WorldObject.h">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -437,6 +488,12 @@
     </Filter>
     <Filter Include="IPlug\VST3\VST3_SDK\plugininterfaces\base">
       <UniqueIdentifier>{5f06b03e-5093-46c0-9513-efb4e494c857}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shapes">
+      <UniqueIdentifier>{0fde0e87-3b1c-46b5-99fe-693e838b100e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utility">
+      <UniqueIdentifier>{95bf77d8-923c-4db4-b912-b16cc8bb572f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

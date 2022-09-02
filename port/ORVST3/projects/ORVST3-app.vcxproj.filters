@@ -274,6 +274,7 @@
       <Filter>IPlug</Filter>
     </ClInclude>
     <ClInclude Include="..\ORVST3_DSP.h" />
+    <ClInclude Include="..\UserMath.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">

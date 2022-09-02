@@ -43,3 +43,5 @@
 #define HACK_B_FN "Hack-Bold.ttf"
 #define HACK_I_FN "Hack-Italic.ttf"
 #define HACK_BI_FN "Hack-BoldItalic.ttf"
+
+#define M_PI 3.14159265358979323846

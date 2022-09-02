@@ -35,10 +35,10 @@ public final class Line extends Shape {
       // Euclidean distance approximation based on octagonal boundary
       double dx = Math.abs(b.x - a.x);
       double dy = Math.abs(b.y - a.y);
-      double min = dy <= dx ? dx : dy;
-      double max = dy > dx ? dy : dx;
+      // double min = dy > dx ? dx : dy; // was previously wrong (calculated the maximum instead of minimum) and also inefficient
+      // double max = dy > dx ? dy : dx; // was previously right, but was still inefficient
 
-      length = 0.41 * min + 0.941246 * max;
+      length = 0.41 * Math.min(dx, dy) + 0.941246 * Math.max(dx, dy);
     }
     return length;
   }

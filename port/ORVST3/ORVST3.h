@@ -2,6 +2,8 @@
 
 #include "IPlug_include_in_plug_hdr.h"
 #include "IControls.h"
+#include "src/shapes.h"
+#include "src/utility.h"
 
 const int kNumPresets = 1;
 
