@@ -11,7 +11,11 @@ The port is in the port/ORVST3/ directory, the ported files so far are:
 - src/Vector2.cpp & src/Vector2.h
 
 ### To actually compile and stuff:
+- Install OpenSSL
 - Place the whole project (as in, the base GH repo) in the Examples folder of an iPlug2 installation
 - Open ORVST3.sln (which is located in port/ORVST3/) with Visual Studio 2022
-- Set the app or vst3 project as the startup project
+- Set the vst3 project as the startup project
+- Tell Visual Studio where OpenSSL's lib/ and include/ folders are
+- Wait for DJ_Level_3 to actually make it work
+- `$ git pull`
 - Run with or without debugging (it doesn't really matter)

@@ -1,6 +1,8 @@
 # VST3 Port!!! YAY!!!
 Hi, DJ_Level_3 here! I've been in contact with [James H. Ball](https://github.com/jameshball), the lead developer of [osci-render](https://github.com/jameshball/osci-render), about making a VST3 plugin version for a DAW for a while now, and I decided to bite the bullet and get started. So here I am!
 
+Note for building and stuffL I used CXXGraph to make the backend easier to port from Java to C++. You need to install OpenSSL and add the lib/ and include/ folders to you library and external include paths respectively.
+
 # Original README.md
 
 <p align="center">
