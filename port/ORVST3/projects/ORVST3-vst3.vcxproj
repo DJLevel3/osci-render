@@ -118,6 +118,8 @@
     <IntDir>$(SolutionDir)build-win\vst3\$(Platform)\$(Configuration)\int\</IntDir>
     <LinkIncremental />
     <TargetExt>.vst3</TargetExt>
+    <ExternalIncludePath>C:\Program Files %28x86%29\OpenSSL\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\OpenSSL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)build-win\vst3\$(Platform)\$(Configuration)\</OutDir>
@@ -132,6 +134,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(SolutionDir)build-win\vst3\$(Platform)\$(Configuration)\int\</IntDir>
     <TargetExt>.vst3</TargetExt>
+    <ExternalIncludePath>C:\Program Files %28x86%29\OpenSSL\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\OpenSSL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Tracer|Win32'">
     <OutDir>$(SolutionDir)build-win\vst3\$(Platform)\$(Configuration)\</OutDir>
@@ -146,6 +150,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Tracer|x64'">
     <IntDir>$(SolutionDir)build-win\vst3\$(Platform)\$(Configuration)\int\</IntDir>
     <TargetExt>.vst3</TargetExt>
+    <ExternalIncludePath>C:\Program Files %28x86%29\OpenSSL\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\OpenSSL\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -329,7 +335,34 @@
     <ClInclude Include="..\..\..\..\..\IPlug\VST3\IPlugVST3_Parameter.h" />
     <ClInclude Include="..\..\..\..\..\IPlug\VST3\IPlugVST3_ProcessorBase.h" />
     <ClInclude Include="..\..\..\..\..\IPlug\VST3\IPlugVST3_View.h" />
+    <ClInclude Include="..\CXXGraph.hpp" />
+    <ClInclude Include="..\CXXGraphConfig.h" />
+    <ClInclude Include="..\Edge\DirectedEdge.hpp" />
+    <ClInclude Include="..\Edge\DirectedWeightedEdge.hpp" />
+    <ClInclude Include="..\Edge\Edge.hpp" />
+    <ClInclude Include="..\Edge\UndirectedEdge.hpp" />
+    <ClInclude Include="..\Edge\UndirectedWeightedEdge.hpp" />
+    <ClInclude Include="..\Edge\Weighted.hpp" />
     <ClInclude Include="..\FFT.h" />
+    <ClInclude Include="..\Graph\Graph.hpp" />
+    <ClInclude Include="..\Graph\Graph_TS.hpp" />
+    <ClInclude Include="..\Node\Node.hpp" />
+    <ClInclude Include="..\Partitioning\CoordinatedPartitionState.hpp" />
+    <ClInclude Include="..\Partitioning\CoordinatedRecord.hpp" />
+    <ClInclude Include="..\Partitioning\EBV.hpp" />
+    <ClInclude Include="..\Partitioning\EdgeBalancedVertexCut.hpp" />
+    <ClInclude Include="..\Partitioning\GreedyVertexCut.hpp" />
+    <ClInclude Include="..\Partitioning\HDRF.hpp" />
+    <ClInclude Include="..\Partitioning\Partition.hpp" />
+    <ClInclude Include="..\Partitioning\PartitionAlgorithm.hpp" />
+    <ClInclude Include="..\Partitioning\Partitioner.hpp" />
+    <ClInclude Include="..\Partitioning\PartitionerThread.hpp" />
+    <ClInclude Include="..\Partitioning\PartitioningStats.hpp" />
+    <ClInclude Include="..\Partitioning\PartitionState.hpp" />
+    <ClInclude Include="..\Partitioning\PartitionStrategy.hpp" />
+    <ClInclude Include="..\Partitioning\Record.hpp" />
+    <ClInclude Include="..\Partitioning\Utility\Globals.hpp" />
+    <ClInclude Include="..\sha.h" />
     <ClInclude Include="..\src\Bezier.h" />
     <ClInclude Include="..\src\Camera.h" />
     <ClInclude Include="..\src\CameraDrawKernel.h" />
@@ -347,6 +380,13 @@
     <ClInclude Include="..\ORVST3.h" />
     <ClInclude Include="..\ORVST3_DSP.h" />
     <ClInclude Include="..\resources\resource.h" />
+    <ClInclude Include="..\Utility\ConstString.hpp" />
+    <ClInclude Include="..\Utility\ConstValue.hpp" />
+    <ClInclude Include="..\Utility\Reader.hpp" />
+    <ClInclude Include="..\Utility\Runnable.hpp" />
+    <ClInclude Include="..\Utility\ThreadSafe.hpp" />
+    <ClInclude Include="..\Utility\Typedef.hpp" />
+    <ClInclude Include="..\Utility\Writer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\Dependencies\IPlug\VST3_SDK\base\source\baseiids.cpp" />

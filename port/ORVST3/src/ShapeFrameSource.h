@@ -1,7 +1,5 @@
 #pragma once
 
-using std::vector;
-
 #include "utility.h"
 
 class ShapeFrameSource

@@ -4,6 +4,7 @@
 #include "IControls.h"
 #include "src/shapes.h"
 #include "src/utility.h"
+#include "CXXGraph.hpp"
 
 const int kNumPresets = 1;
 

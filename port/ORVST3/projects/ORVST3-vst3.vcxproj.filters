@@ -424,6 +424,108 @@
     <ClInclude Include="..\src\WorldObject.h">
       <Filter>utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\Edge\DirectedEdge.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Edge\DirectedWeightedEdge.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Edge\Edge.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Edge\UndirectedEdge.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Edge\UndirectedWeightedEdge.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Edge\Weighted.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Graph\Graph.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Graph\Graph_TS.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Node\Node.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\CoordinatedPartitionState.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\CoordinatedRecord.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\EBV.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\EdgeBalancedVertexCut.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\GreedyVertexCut.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\HDRF.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\Partition.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\PartitionAlgorithm.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\Partitioner.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\PartitionerThread.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\PartitioningStats.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\PartitionState.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\PartitionStrategy.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\Record.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Partitioning\Utility\Globals.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utility\ConstString.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utility\ConstValue.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utility\Reader.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utility\Runnable.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utility\ThreadSafe.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utility\Typedef.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utility\Writer.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CXXGraph.hpp">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CXXGraphConfig.h">
+      <Filter>CXXGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sha.h">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -494,6 +596,9 @@
     </Filter>
     <Filter Include="utility">
       <UniqueIdentifier>{95bf77d8-923c-4db4-b912-b16cc8bb572f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CXXGraph">
+      <UniqueIdentifier>{ae18ed26-b138-4bad-a66f-596b05cd63c3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
