@@ -97,4 +97,49 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: jameshball/osci-render
+<<<<<<< HEAD
+=======
+          
+  build-docs:
+  
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout wiki
+        uses: actions/checkout@master
+        with:
+          repository: jameshball/osci-render.wiki
+          path: wiki
+      - name: Checkout osci-render
+        uses: actions/checkout@master
+        with:
+          path: osci-render
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Convert wiki to PDF
+        run: |
+          sudo apt update
+          sudo apt install xfonts-75dpi xfonts-base gvfs colord glew-utils libvisual-0.4-plugins gstreamer1.0-tools opus-tools qt5-image-formats-plugins qtwayland5 qt5-qmltooling-plugins librsvg2-bin lm-sensors
+          sudo apt install wget
+          wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb
+          sudo dpkg -i wkhtmltox_0.12.5-1.bionic_amd64.deb
+          sudo npm install -g github-wikito-converter
+          cd wiki
+          ls | grep -xv "Home.md" | parallel rm
+          cd ..
+          gwtc -v -f pdf -t "osci-render documentation" --logo-img "osci-render/osci.png" wiki
+          cd osci-render
+          version=$(mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
+          echo "VERSION=$version" >> $GITHUB_ENV
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          files: documentation.pdf
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: jameshball/osci-render
+          
+>>>>>>> e0d0473 (Update release.yml)
 
