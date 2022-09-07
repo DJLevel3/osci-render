@@ -97,8 +97,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: jameshball/osci-render
-<<<<<<< HEAD
-=======
           
   build-docs:
   
@@ -141,5 +139,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: jameshball/osci-render
           
->>>>>>> e0d0473 (Update release.yml)
 
