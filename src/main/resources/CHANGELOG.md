@@ -1,3 +1,33 @@
+- 1.30.1
+  - Changed Lua demo file to the mini osci-render demo that emulates a basic version of osci-render within osci-render
+  - Done this as the old demo's audio was quite jarring and the new one shows off more of Lua
+
+
+- 1.30.0
+  - Updated osci-render to Java 19 (please report any new issues you think could be related to this!)
+  - Added volume slider on right side of main interface
+    - This replaces the volume scale slider under audio effects
+    - The slider has a volume visualiser that shows the current volume in the left and right audio channels
+    - It also shows the average volume
+    - There is also another slider that points to the volume slider that controls the hard clipping point of the audio
+      - The hard clipping point is the point at which the audio is clipped to the maximum volume
+      - Any samples above this point are set to this point
+      - By default, this is set to 1 meaning that any values less than -1 or greater than 1 are set to -1 or 1 respectively
+
+
+- 1.29.0
+  - Updated the project select interface and main interface to be resizable
+  - This means you can make osci-render full screen now
+  - The default size is the same as before, and should look almost identical
+
+
+- 1.28.5
+  - Fixed various bugs:
+    - Fixed rotation setting isn't set correctly when opening a project [#128](https://github.com/jameshball/osci-render/issues/128)
+    - Undo/redo carries over between different files in the text editor [#120](https://github.com/jameshball/osci-render/issues/120)
+    - Fonts and font styles chosen for text file rendering are not saved to a project [#113](https://github.com/jameshball/osci-render/issues/113)
+
+
 - 1.28.4
   - Fix calculation of line length
   - Use rotation for Ellipse shapes

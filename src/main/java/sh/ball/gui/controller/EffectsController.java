@@ -87,8 +87,6 @@ public class EffectsController implements Initializable, SubController {
   @FXML
   private EffectComponentGroup rotateSpeed;
   @FXML
-  private EffectComponentGroup volume;
-  @FXML
   private EffectComponentGroup backingMidi;
   @FXML
   private TextField translationXTextField;
@@ -194,7 +192,6 @@ public class EffectsController implements Initializable, SubController {
     translationScale.setAnimator(new EffectAnimator(DEFAULT_SAMPLE_RATE, translateEffect));
     translationSpeed.setAnimator(new EffectAnimator(DEFAULT_SAMPLE_RATE, new ConsumerEffect(translateEffect::setSpeed)));
     rotateSpeed.setAnimator(new EffectAnimator(DEFAULT_SAMPLE_RATE, rotateEffect));
-    volume.setAnimator(new EffectAnimator(DEFAULT_SAMPLE_RATE, new ConsumerEffect((value) -> audioPlayer.setVolume(value / 3.0))));
     backingMidi.setAnimator(new EffectAnimator(DEFAULT_SAMPLE_RATE, new ConsumerEffect(audioPlayer::setBackingMidiVolume)));
 
     effects().forEach(effect -> {
@@ -245,31 +242,21 @@ public class EffectsController implements Initializable, SubController {
 
     fixedAngleX.setOnMouseClicked(e -> {
       setFixedAngleX = !setFixedAngleX;
-      if (setFixedAngleX) {
-        fixedAngleX.setFill(Color.RED);
-      } else {
-        fixedAngleX.setFill(Color.WHITE);
-      }
-      rotateX.getAnimator().updateValue();
+      setFixedAngle(setFixedAngleX, fixedAngleX, rotateX);
     });
     fixedAngleY.setOnMouseClicked(e -> {
       setFixedAngleY = !setFixedAngleY;
-      if (setFixedAngleY) {
-        fixedAngleY.setFill(Color.RED);
-      } else {
-        fixedAngleY.setFill(Color.WHITE);
-      }
-      rotateY.getAnimator().updateValue();
+      setFixedAngle(setFixedAngleY, fixedAngleY, rotateY);
     });
     fixedAngleZ.setOnMouseClicked(e -> {
       setFixedAngleZ = !setFixedAngleZ;
-      if (setFixedAngleZ) {
-        fixedAngleZ.setFill(Color.RED);
-      } else {
-        fixedAngleZ.setFill(Color.WHITE);
-      }
-      rotateZ.getAnimator().updateValue();
+      setFixedAngle(setFixedAngleZ, fixedAngleZ, rotateZ);
     });
+  }
+
+  private void setFixedAngle(boolean fixedAngle, SVGPath fixedAngleButton, EffectComponentGroup rotate) {
+    fixedAngleButton.setFill(fixedAngle ? Color.RED : Color.WHITE);
+    rotate.getAnimator().updateValue();
   }
 
   private void updateDepthFunction(byte[] fileData, String fileName) {
@@ -297,7 +284,6 @@ public class EffectsController implements Initializable, SubController {
       translationScale,
       translationSpeed,
       rotateSpeed,
-      volume,
       backingMidi
     );
   }
@@ -408,9 +394,9 @@ public class EffectsController implements Initializable, SubController {
       setFixedAngleZ = fixedRotateZ != null && Boolean.parseBoolean(fixedRotateZ.getTextContent());
     }
 
-    fixedAngleX.setFill(setFixedAngleX ? Color.RED : Color.WHITE);
-    fixedAngleY.setFill(setFixedAngleY ? Color.RED : Color.WHITE);
-    fixedAngleZ.setFill(setFixedAngleZ ? Color.RED : Color.WHITE);
+    setFixedAngle(setFixedAngleX, fixedAngleX, rotateX);
+    setFixedAngle(setFixedAngleY, fixedAngleY, rotateY);
+    setFixedAngle(setFixedAngleZ, fixedAngleZ, rotateZ);
   }
 
   @Override
@@ -423,10 +409,6 @@ public class EffectsController implements Initializable, SubController {
     translationYTextField.setText(MainController.FORMAT.format(translation.getY()));
   }
 
-  public void setTranslationIncrement(double increment) {
-    this.scrollDelta = increment;
-  }
-
   // changes the sinusoidal translation of the image rendered
   private void updateTranslation() {
     translateEffect.setTranslation(new Vector2(
@@ -435,17 +417,11 @@ public class EffectsController implements Initializable, SubController {
     ));
   }
 
-
-
   public boolean mouseTranslate() {
     return translateCheckBox.isSelected();
   }
 
   public void disableMouseTranslate() {
     translateCheckBox.setSelected(false);
-  }
-
-  public void setVolume(double volumeValue) {
-    volume.setValue(volumeValue);
   }
 }
