@@ -8,10 +8,12 @@
 #include "VisualiserSettings.h"
 #include "../components/StopwatchComponent.h"
 #include "../img/qoixx.hpp"
+#include "../ffmpeg/ffmpeg_encode.h"
 
 #define FILE_RENDER_DUMMY 0
 #define FILE_RENDER_PNG 1
 #define FILE_RENDER_QOI 2
+#define FILE_RENDER_FFMPEG 3
 
 enum class FullScreenMode {
     TOGGLE,
@@ -113,6 +115,8 @@ private:
     
     std::vector<float> scratchVertices;
     std::vector<float> fullScreenQuad;
+    std::vector<float> fullScreenQuadUpright = { -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f };
+    std::vector<float> fullScreenQuadFlipped = { -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f };
     
     GLuint frameBuffer = 0;
     Texture lineTexture;
@@ -129,6 +133,7 @@ private:
     
     std::unique_ptr<juce::OpenGLShaderProgram> simpleShader;
     std::unique_ptr<juce::OpenGLShaderProgram> texturedShader;
+    std::unique_ptr<juce::OpenGLShaderProgram> flippedTexturedShader;
     std::unique_ptr<juce::OpenGLShaderProgram> blurShader;
     std::unique_ptr<juce::OpenGLShaderProgram> lineShader;
     std::unique_ptr<juce::OpenGLShaderProgram> outputShader;
@@ -151,6 +156,7 @@ private:
     void drawLineTexture(const std::vector<float>& xPoints, const std::vector<float>& yPoints, const std::vector<float>& zPoints);
     void saveTextureToPNG(Texture texture, const juce::File& file);
     void saveTextureToQOI(Texture texture, const juce::File& file);
+    void saveTextureToFFMPEG(Texture texture, FfmpegEncoder* encoder);
     void activateTargetTexture(std::optional<Texture> texture);
     void setShader(juce::OpenGLShaderProgram* program);
     void drawTexture(std::optional<Texture> texture0, std::optional<Texture> texture1 = std::nullopt, std::optional<Texture> texture2 = std::nullopt, std::optional<Texture> texture3 = std::nullopt);
@@ -163,11 +169,44 @@ private:
     void viewportChanged(juce::Rectangle<int> area);
 
     void renderScope(const std::vector<float>& xPoints, const std::vector<float>& yPoints, const std::vector<float>& zPoints);
-    int renderAudioFile(juce::File& sourceAudio, int method = 1, int width = 1024, int height = 1024);
+
+    int prepRecording(juce::File& sourceAudio, int method = FILE_RENDER_FFMPEG, int width = 1024, int height = 1024);
+    void renderAudioFile(int startFrame, int nFrames);
+    void completeRecording();
 
     Texture createScreenTexture();
 
+    // Recording stuff
+    const int BATCH_SIZE = 10;
+    bool nowRecording = false;
+
+    int recordingCurrentFrame = 0;
+    
+    int recordingNFrames = 0;
+    
     juce::File audioFile;
+    juce::AudioFormatManager manager;
+    juce::AudioSampleBuffer fileBuffer;
+    int fileChannels = 0;
+    int fileSamples = 0;
+    double fileSampleRate = 0;
+    int frameNSamples = 0;
+    int frameNSamplesResampled = 0;
+
+    std::vector<float> fileXSamples;
+    std::vector<float> fileYSamples;
+    std::vector<float> fileZSamples;
+
+    std::vector<float> frameXSamples;
+    std::vector<float> frameYSamples;
+    std::vector<float> frameZSamples;
+
+    std::string fileName;
+    juce::File destDir;
+    FfmpegEncoder::Params encoderParams;
+    FfmpegEncoder encoder;
+
+    int fileEncodingMethod;
 
     std::vector<unsigned char> pixels;
     const qoixx::qoi::desc imageFormat{ .width = 1024, .height = 1024, .channels = 4, .colorspace = qoixx::qoi::colorspace::srgb };

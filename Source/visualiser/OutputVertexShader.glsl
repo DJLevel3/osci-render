@@ -7,7 +7,7 @@ uniform float uResizeForCanvas;
 
 void main() {
     gl_Position = vec4(aPos, 0.0, 1.0);
-    vTexCoord = (0.5 * aPos + 0.5);
+    vTexCoord = (0.5 * vec2(aPos.x, -aPos.y) + 0.5);
     vTexCoordCanvas = vTexCoord * uResizeForCanvas;
 }
 
