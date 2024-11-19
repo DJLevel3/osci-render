@@ -134,6 +134,7 @@ void VisualiserComponent::setFullScreen(bool fullScreen) {}
 void VisualiserComponent::toggleRecording() {
     nowRecording = !nowRecording;
     if (nowRecording) {
+        stopwatch.reset();
         recordingCurrentFrame = 0;
         chooser = std::make_unique<juce::FileChooser>("Choose a .wav file to render...", juce::File(), "*.wav;*.flac");
         auto chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
