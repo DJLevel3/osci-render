@@ -149,6 +149,9 @@ void VisualiserComponent::toggleRecording() {
 void VisualiserComponent::haltRecording() {
     completeRecording();
     recordingNFrames = 0;
+    nowRecording = false;
+    stopwatch.stop();
+    stopwatch.setVisible(false);
     record.setToggleState(false, juce::NotificationType::dontSendNotification);
 }
 
