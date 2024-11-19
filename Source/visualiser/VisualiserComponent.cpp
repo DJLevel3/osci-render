@@ -315,7 +315,7 @@ void VisualiserComponent::renderOpenGL() {
             if (recordingNFrames > 0) {
                 renderAudioFile(recordingCurrentFrame, std::min(BATCH_SIZE, recordingNFrames - recordingCurrentFrame));
                 recordingCurrentFrame += BATCH_SIZE;
-                if (recordingCurrentFrame >= recordingNFrames) completeRecording();
+                if (recordingCurrentFrame >= recordingNFrames) haltRecording();
             } else if (settings.parameters.upsamplingEnabled->getBoolValue()) {
                 renderScope(smoothedXSamples, smoothedYSamples, smoothedZSamples);
             } else {
