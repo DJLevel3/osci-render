@@ -15,6 +15,24 @@
 #define FILE_RENDER_QOI 2
 #define FILE_RENDER_FFMPEG 3
 
+// STOP!!! If you define USE_FFMPEG here, it's going
+// to break! Instead, go into ffmpeg/ffmpeg_encode.h
+// and uncomment the #define directive there. Also,
+// while you're there, make sure to set up all of the
+// dependencies laid out in said file. If you don't,
+// it'll either fail to compile, or it'll fail to load
+// ffmpeg at runtime and cause very strange issues.
+
+#ifdef USE_FFMPEG
+#pragma comment(lib, "avformat")
+#pragma comment(lib, "avutil")
+#pragma comment(lib, "avcodec")
+#pragma comment(lib, "swscale")
+#define FILE_RENDER_DEFAULT 3
+#else
+#define FILE_RENDER_DEFAULT 2
+#endif
+
 enum class FullScreenMode {
     TOGGLE,
     FULL_SCREEN,
@@ -156,7 +174,9 @@ private:
     void drawLineTexture(const std::vector<float>& xPoints, const std::vector<float>& yPoints, const std::vector<float>& zPoints);
     void saveTextureToPNG(Texture texture, const juce::File& file);
     void saveTextureToQOI(Texture texture, const juce::File& file);
+#ifdef USE_FFMPEG
     void saveTextureToFFMPEG(Texture texture, FfmpegEncoder* encoder);
+#endif
     void activateTargetTexture(std::optional<Texture> texture);
     void setShader(juce::OpenGLShaderProgram* program);
     void drawTexture(std::optional<Texture> texture0, std::optional<Texture> texture1 = std::nullopt, std::optional<Texture> texture2 = std::nullopt, std::optional<Texture> texture3 = std::nullopt);
@@ -170,7 +190,8 @@ private:
 
     void renderScope(const std::vector<float>& xPoints, const std::vector<float>& yPoints, const std::vector<float>& zPoints);
 
-    int prepRecording(juce::File& sourceAudio, int method = FILE_RENDER_FFMPEG, int width = 1024, int height = 1024);
+    int prepRecording(juce::File& sourceAudio, int method = FILE_RENDER_DEFAULT, int width = 1024, int height = 1024);
+        
     void renderAudioFile(int startFrame, int nFrames);
     void completeRecording();
 
@@ -203,8 +224,11 @@ private:
 
     std::string fileName;
     juce::File destDir;
+
+#ifdef USE_FFMPEG
     FfmpegEncoder::Params encoderParams;
     FfmpegEncoder encoder;
+#endif
 
     int fileEncodingMethod;
 

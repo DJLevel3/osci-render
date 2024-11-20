@@ -187,7 +187,7 @@
       </MODULEPATHS>
     </LINUX_MAKE>
     <VS2022 targetFolder="Builds/sosci/VisualStudio2022" smallIcon="pSc1mq"
-            bigIcon="pSc1mq" externalLibraries="avformat.lib&#10;avutil.lib&#10;avcodec.lib&#10;swscale.lib">
+            bigIcon="pSc1mq">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="sosci" libraryPath="C:\ffmpeg\bin"
                        headerPath="C:\ffmpeg\include"/>

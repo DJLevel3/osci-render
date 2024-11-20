@@ -1,6 +1,6 @@
 #include "ffmpeg_encode.h"
 
-
+#ifdef USE_FFMPEG
 FfmpegEncoder::FfmpegEncoder(const char *filename, const Params &params)
 {
 	Open(filename, params);
@@ -253,3 +253,4 @@ bool FfmpegEncoder::FlushPackets()
 	return true;
 }
 
+#endif

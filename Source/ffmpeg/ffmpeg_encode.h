@@ -1,4 +1,31 @@
+// Uncomment the below define to enable using
+// FFMPEG to encode the exports to video. This
+// also requires a full rebuild of the project!
+// Meaning, you have to recompile every file,
+// not just the ones that are detected as
+// changed by uncommenting the define. Also,
+// there are some dependencies required for this
+// to work, which are listed below:
+// 
+// On Windows:
+// - MinGW is installed and set up
+// - mingw-w64-x264 has been installed on MinGW
+//   (with all dependencies)
+// - FFMPEG has been built from source and
+//   installed via MinGW, configured using at
+//   minimum the following options:
+//     ./configure --prefix=C:\ffmpeg \
+//     --enable-shared --enable-gpl \
+//     --enable-libx264
+// - C:\ffmpeg is in PATH, and is BEFORE the
+//   MinGW directory in PATH
+// 
+// TODO: MacOS dependency
+// 
 
+#define USE_FFMPEG
+
+#ifdef USE_FFMPEG
 #include <stdint.h>
 #include <iostream>
 
@@ -74,3 +101,5 @@ private:
 
 	Context mContext = {};
 };
+
+#endif

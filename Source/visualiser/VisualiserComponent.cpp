@@ -57,6 +57,7 @@ VisualiserComponent::VisualiserComponent(AudioBackgroundThreadManager& threadMan
 }
 
 VisualiserComponent::~VisualiserComponent() {
+    haltRecording();
     openGLContext.detach();
 }
 
@@ -309,7 +310,7 @@ void VisualiserComponent::renderOpenGL() {
             // prep the recording if there's a file to record
             if (audioFile != juce::File{}) {
                 if (recordingNFrames > 0) completeRecording();
-                recordingNFrames = prepRecording(audioFile, FILE_RENDER_FFMPEG);
+                recordingNFrames = prepRecording(audioFile, FILE_RENDER_DEFAULT);
                 audioFile = juce::File{};
                 stopwatch.reset();
                 stopwatch.start();
@@ -503,6 +504,7 @@ void VisualiserComponent::saveTextureToQOI(Texture texture, const juce::File& fi
     file.replaceWithData(binaryData.data(), binaryData.size());
 }
 
+#ifdef USE_FFMPEG
 void VisualiserComponent::saveTextureToFFMPEG(Texture texture, FfmpegEncoder* encoder) {
     using namespace juce::gl;
     GLuint textureID = texture.id;
@@ -519,6 +521,7 @@ void VisualiserComponent::saveTextureToFFMPEG(Texture texture, FfmpegEncoder* en
 
     encoder->Write(pixels.data());
 }
+#endif
 
 void VisualiserComponent::activateTargetTexture(std::optional<Texture> texture) {
     using namespace juce::gl;
@@ -883,6 +886,7 @@ int VisualiserComponent::prepRecording(juce::File& sourceAudio, int method, int 
     fileName = "";
     destDir = sourceAudio.getParentDirectory().getChildFile("sosci export/");
 
+#ifdef USE_FFMPEG
     encoderParams.width = 1024;
     encoderParams.height = 1024;
     encoderParams.fps = FRAME_RATE;
@@ -900,6 +904,7 @@ int VisualiserComponent::prepRecording(juce::File& sourceAudio, int method, int 
         }
         else nFrames = 0;
     }
+#endif
     fileEncodingMethod = method;
 
     // cleanup
@@ -958,14 +963,19 @@ void VisualiserComponent::renderAudioFile(int start, int nFrames) {
             saveTextureToQOI(renderTexture, destDir.getChildFile(fileName + ".qoi"));
             break;
         case FILE_RENDER_FFMPEG:
+#ifdef USE_FFMPEG
             saveTextureToFFMPEG(renderTexture, &encoder);
+#endif
+            break;
         };
         time += 0.01f;
     }
 }
 
 void VisualiserComponent::completeRecording() {
+#ifdef USE_FFMPEG
     if (fileEncodingMethod == FILE_RENDER_FFMPEG || encoder.IsOpen()) {
         encoder.Close();
     }
+#endif
 }
