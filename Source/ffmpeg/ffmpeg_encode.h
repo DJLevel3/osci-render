@@ -23,7 +23,7 @@
 // TODO: MacOS dependency
 // 
 
-#define USE_FFMPEG
+// #define USE_FFMPEG
 
 #ifdef USE_FFMPEG
 #include <stdint.h>
