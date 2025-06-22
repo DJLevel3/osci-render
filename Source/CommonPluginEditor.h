@@ -6,12 +6,14 @@
 #include "components/SosciMainMenuBarModel.h"
 #include "components/SvgButton.h"
 #include "components/VolumeComponent.h"
+#include "components/DownloaderComponent.h"
 
 class CommonPluginEditor : public juce::AudioProcessorEditor {
 public:
     CommonPluginEditor(CommonAudioProcessor&, juce::String appName, juce::String projectFileType, int width, int height);
     ~CommonPluginEditor() override;
 
+    void handleCommandLine(const juce::String& commandLine);
     void initialiseMenuBar(juce::MenuBarModel& menuBarModel);
     void openProject(const juce::File& file);
     void openProject();
@@ -43,8 +45,7 @@ public:
 
     std::unique_ptr<juce::FileChooser> chooser;
     juce::MenuBarComponent menuBar;
-
-    juce::TooltipWindow tooltipWindow{nullptr, 0};
+    juce::SharedResourcePointer<juce::TooltipWindow> tooltipWindow;
     juce::DropShadower tooltipDropShadow{juce::DropShadow(juce::Colours::black.withAlpha(0.5f), 6, {0,0})};
 
     bool usingNativeMenuBar = false;

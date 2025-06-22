@@ -1,11 +1,12 @@
 #pragma once
 
 #include <JuceHeader.h>
+
+#include "CommonPluginEditor.h"
+#include "LookAndFeel.h"
+#include "MidiComponent.h"
 #include "PluginProcessor.h"
 #include "SettingsComponent.h"
-#include "MidiComponent.h"
-#include "components/OsciMainMenuBarModel.h"
-#include "LookAndFeel.h"
 #include "components/ErrorCodeEditorComponent.h"
 #include "components/LuaConsole.h"
 #include "CommonPluginEditor.h"
@@ -17,7 +18,7 @@ public:
 
     void paint(juce::Graphics&) override;
     void resized() override;
-    
+
     bool isBinaryFile(juce::String name);
     void initialiseCodeEditors();
     void addCodeEditor(int index);
@@ -32,17 +33,19 @@ public:
     void editCustomFunction(bool enabled);
 
 private:
-    OscirenderAudioProcessor& audioProcessor;
-public:
+    void registerFileRemovedCallback();
 
+    OscirenderAudioProcessor& audioProcessor;
+
+public:
     const double CLOSED_PREF_SIZE = 30.0;
     const double RESIZER_BAR_SIZE = 7.0;
 
     std::atomic<bool> editingCustomFunction = false;
 
     SettingsComponent settings{audioProcessor, *this};
-    
-#if !SOSCI_FEATURES
+
+#if !OSCI_PREMIUM
     juce::TextButton upgradeButton{"Upgrade to premium!"};
 #endif
 
@@ -56,7 +59,7 @@ public:
     juce::CodeEditorComponent::ColourScheme colourScheme;
     juce::LuaTokeniser luaTokeniser;
     juce::XmlTokeniser xmlTokeniser;
-	juce::ShapeButton collapseButton;
+    juce::ShapeButton collapseButton;
     std::shared_ptr<juce::CodeDocument> customFunctionCodeDocument = std::make_shared<juce::CodeDocument>();
     std::shared_ptr<OscirenderCodeEditorComponent> customFunctionCodeEditor = std::make_shared<OscirenderCodeEditorComponent>(*customFunctionCodeDocument, &luaTokeniser, audioProcessor, CustomEffect::UNIQUE_ID, CustomEffect::FILE_NAME);
 
@@ -70,8 +73,8 @@ public:
 
     std::atomic<bool> updatingDocumentsWithParserLock = false;
 
-	void codeDocumentTextInserted(const juce::String& newText, int insertIndex) override;
-	void codeDocumentTextDeleted(int startIndex, int endIndex) override;
+    void codeDocumentTextInserted(const juce::String& newText, int insertIndex) override;
+    void codeDocumentTextDeleted(int startIndex, int endIndex) override;
     void updateCodeDocument();
     void updateCodeEditor(bool binaryFile, bool shouldOpenEditor = false);
     void setCodeEditorVisible(std::optional<bool> visible);
@@ -80,5 +83,16 @@ public:
     void mouseDown(const juce::MouseEvent& event) override;
     void mouseMove(const juce::MouseEvent& event) override;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OscirenderAudioProcessorEditor)
+#if (JUCE_MAC || JUCE_WINDOWS) && OSCI_PREMIUM
+    // Syphon/Spout input dialog
+    void openSyphonInputDialog();
+    void connectSyphonInput(const juce::String& server, const juce::String& app);
+    void disconnectSyphonInput();
+    juce::String getSyphonSourceName() const;
+
+    juce::SpinLock syphonLock;
+    std::unique_ptr<SyphonFrameGrabber> syphonFrameGrabber;
+#endif
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OscirenderAudioProcessorEditor)
 };

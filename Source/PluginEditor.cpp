@@ -1,38 +1,54 @@
-#include "PluginProcessor.h"
 #include "PluginEditor.h"
+
+#include <memory>
+
+#include "../modules/juce_sharedtexture/SharedTexture.h"
 #include "CustomStandaloneFilterWindow.h"
+#include "PluginProcessor.h"
+#include "components/SyphonInputSelectorComponent.h"
+
+void OscirenderAudioProcessorEditor::registerFileRemovedCallback() {
+    audioProcessor.setFileRemovedCallback([this](int index) {
+        removeCodeEditor(index);
+        fileUpdated(audioProcessor.getCurrentFileName());
+        juce::MessageManager::callAsync([this] {
+            resized();
+        });
+    });
+}
 
 OscirenderAudioProcessorEditor::OscirenderAudioProcessorEditor(OscirenderAudioProcessor& p) : CommonPluginEditor(p, "osci-render", "osci", 1100, 750), audioProcessor(p), collapseButton("Collapse", juce::Colours::white, juce::Colours::white, juce::Colours::white) {
-#if !SOSCI_FEATURES
+    // Register the file removal callback
+    registerFileRemovedCallback();
+
+#if !OSCI_PREMIUM
     addAndMakeVisible(upgradeButton);
     upgradeButton.onClick = [this] {
-        juce::URL("https://osci-render.com/sosci").launchInDefaultBrowser();
+        juce::URL("https://osci-render.com/#purchase").launchInDefaultBrowser();
     };
     upgradeButton.setColour(juce::TextButton::buttonColourId, Colours::accentColor);
     upgradeButton.setColour(juce::TextButton::textColourOffId, Colours::veryDark);
 #endif
-        
-    addAndMakeVisible(volume);
-    
+
     addAndMakeVisible(console);
     console.setConsoleOpen(false);
-    
-	LuaParser::onPrint = [this](const std::string& message) {
-		console.print(message);
-	};
+
+    LuaParser::onPrint = [this](const std::string& message) {
+        console.print(message);
+    };
 
     LuaParser::onClear = [this]() {
         console.clear();
     };
 
     addAndMakeVisible(collapseButton);
-	collapseButton.onClick = [this] {
+    collapseButton.onClick = [this] {
         setCodeEditorVisible(std::nullopt);
-	};
-    
-	juce::Path path;
+    };
+
+    juce::Path path;
     path.addTriangle(0.0f, 0.5f, 1.0f, 1.0f, 1.0f, 0.0f);
-	collapseButton.setShape(path, false, true, true);
+    collapseButton.setShape(path, false, true, true);
     collapseButton.setMouseCursor(juce::MouseCursor::PointingHandCursor);
 
     colourScheme = lookAndFeel.getDefaultColourScheme();
@@ -42,12 +58,12 @@ OscirenderAudioProcessorEditor::OscirenderAudioProcessorEditor(OscirenderAudioPr
         initialiseCodeEditors();
     }
 
-    {   
+    {
         juce::MessageManagerLock lock;
         audioProcessor.fileChangeBroadcaster.addChangeListener(this);
         audioProcessor.broadcaster.addChangeListener(this);
     }
-    
+
     double codeEditorLayoutPreferredSize = std::any_cast<double>(audioProcessor.getProperty("codeEditorLayoutPreferredSize", -0.7));
     double luaLayoutPreferredSize = std::any_cast<double>(audioProcessor.getProperty("luaLayoutPreferredSize", -0.7));
 
@@ -69,6 +85,13 @@ OscirenderAudioProcessorEditor::OscirenderAudioProcessorEditor(OscirenderAudioPr
 }
 
 OscirenderAudioProcessorEditor::~OscirenderAudioProcessorEditor() {
+#if (JUCE_MAC || JUCE_WINDOWS) && OSCI_PREMIUM
+    audioProcessor.syphonInputActive = false;
+#endif
+
+    // Clear the file removal callback
+    audioProcessor.setFileRemovedCallback(nullptr);
+
     menuBar.setModel(nullptr);
     juce::MessageManagerLock lock;
     audioProcessor.broadcaster.removeChangeListener(this);
@@ -90,21 +113,10 @@ bool OscirenderAudioProcessorEditor::isInterestedInFileDrag(const juce::StringAr
         return false;
     }
     juce::File file(files[0]);
-    return
-        file.hasFileExtension("wav") ||
-        file.hasFileExtension("aiff") ||
-        file.hasFileExtension("ogg") ||
-        file.hasFileExtension("flac") ||
-        file.hasFileExtension("mp3") ||
-        file.hasFileExtension("osci") ||
-        file.hasFileExtension("txt") ||
-        file.hasFileExtension("lua") ||
-        file.hasFileExtension("svg") ||
-        file.hasFileExtension("obj") ||
-        file.hasFileExtension("gif") ||
-        file.hasFileExtension("png") ||
-        file.hasFileExtension("jpg") ||
-        file.hasFileExtension("gpla");
+    juce::String ext = file.getFileExtension().toLowerCase();
+    if (std::find(audioProcessor.FILE_EXTENSIONS.begin(), audioProcessor.FILE_EXTENSIONS.end(), ext) != audioProcessor.FILE_EXTENSIONS.end()) {
+        return true;
+    }
 }
 
 void OscirenderAudioProcessorEditor::filesDropped(const juce::StringArray& files, int x, int y) {
@@ -112,13 +124,13 @@ void OscirenderAudioProcessorEditor::filesDropped(const juce::StringArray& files
         return;
     }
     juce::File file(files[0]);
-    
+
     if (file.hasFileExtension("osci")) {
         openProject(file);
     } else {
-        juce::SpinLock::ScopedLockType lock1(audioProcessor.parsersLock);
-        juce::SpinLock::ScopedLockType lock2(audioProcessor.effectsLock);
-        
+        juce::SpinLock::ScopedLockType parsersLock(audioProcessor.parsersLock);
+        juce::SpinLock::ScopedLockType effectsLock(audioProcessor.effectsLock);
+
         audioProcessor.addFile(file);
         addCodeEditor(audioProcessor.getCurrentFileIndex());
         fileUpdated(audioProcessor.getCurrentFileName());
@@ -127,10 +139,10 @@ void OscirenderAudioProcessorEditor::filesDropped(const juce::StringArray& files
 
 bool OscirenderAudioProcessorEditor::isBinaryFile(juce::String name) {
     name = name.toLowerCase();
-    return name.endsWith(".gpla") || name.endsWith(".gif") || name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".wav") || name.endsWith(".aiff") || name.endsWith(".ogg") || name.endsWith(".mp3") || name.endsWith(".flac");
+    return name.endsWith(".gpla") || name.endsWith(".gif") || name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".wav") || name.endsWith(".aiff") || name.endsWith(".ogg") || name.endsWith(".mp3") || name.endsWith(".flac") || name.endsWith(".mp4") || name.endsWith(".mov");
 }
 
-// parsersLock must be held
+// parsersLock and syphonLock must be held
 void OscirenderAudioProcessorEditor::initialiseCodeEditors() {
     codeEditors.clear();
     codeDocuments.clear();
@@ -149,22 +161,17 @@ void OscirenderAudioProcessorEditor::paint(juce::Graphics& g) {
 
 void OscirenderAudioProcessorEditor::resized() {
     CommonPluginEditor::resized();
-    
+
     auto area = getLocalBounds();
 
     if (!usingNativeMenuBar) {
         auto topBar = area.removeFromTop(25);
         menuBar.setBounds(topBar);
-#if !SOSCI_FEATURES
+#if !OSCI_PREMIUM
         upgradeButton.setBounds(topBar.removeFromRight(150).reduced(2, 2));
 #endif
     }
-    
-    area.removeFromTop(2);
-    area.removeFromLeft(3);
-    auto volumeArea = area.removeFromLeft(30);
-    volume.setBounds(volumeArea.withSizeKeepingCentre(volumeArea.getWidth(), juce::jmin(volumeArea.getHeight(), 300)));
-    area.removeFromLeft(3);
+
     bool editorVisible = false;
 
     {
@@ -176,7 +183,7 @@ void OscirenderAudioProcessorEditor::resized() {
         bool ableToEditFile = (originalIndex != -1 && !isBinaryFile(audioProcessor.getCurrentFileName())) || editingCustomFunction;
         bool fileOpen = false;
         bool luaFileOpen = false;
-        
+
         if (ableToEditFile) {
             if (index < codeEditors.size() && codeEditors[index]->isVisible()) {
                 editorVisible = true;
@@ -185,8 +192,8 @@ void OscirenderAudioProcessorEditor::resized() {
                 juce::Component dummy2;
                 juce::Component dummy3;
 
-                juce::Component* columns[] = { &dummy, &resizerBar, &dummy2 };
-                 
+                juce::Component* columns[] = {&dummy, &resizerBar, &dummy2};
+
                 // offsetting the y position by -1 and the height by +1 is a hack to fix a bug where the code editor
                 // doesn't draw up to the edges of the menu bar above.
                 layout.layOutComponents(columns, 3, area.getX(), area.getY() - 1, area.getWidth(), area.getHeight() + 1, false, true);
@@ -205,10 +212,10 @@ void OscirenderAudioProcessorEditor::resized() {
                 }
 
                 if (editingCustomFunction || extension == ".lua") {
-                    juce::Component* rows[] = { &dummy3, &luaResizerBar, &lua };
+                    juce::Component* rows[] = {&dummy3, &luaResizerBar, &lua};
                     luaLayout.layOutComponents(rows, 3, dummy2Bounds.getX(), dummy2Bounds.getY(), dummy2Bounds.getWidth(), dummy2Bounds.getHeight(), true, true);
                     auto dummy3Bounds = dummy3.getBounds();
-					console.setBounds(dummy3Bounds.removeFromBottom(console.getConsoleOpen() ? 200 : 30));
+                    console.setBounds(dummy3Bounds.removeFromBottom(console.getConsoleOpen() ? 200 : 30));
                     dummy3Bounds.removeFromBottom(RESIZER_BAR_SIZE);
                     codeEditors[index]->setBounds(dummy3Bounds);
                     luaFileOpen = true;
@@ -245,10 +252,10 @@ void OscirenderAudioProcessorEditor::resized() {
     }
 
     settings.setBounds(area);
-    
+
     audioProcessor.setProperty("codeEditorLayoutPreferredSize", layout.getItemCurrentRelativeSize(0));
     audioProcessor.setProperty("luaLayoutPreferredSize", luaLayout.getItemCurrentRelativeSize(0));
-    
+
     repaint();
 }
 
@@ -272,7 +279,7 @@ void OscirenderAudioProcessorEditor::addCodeEditor(int index) {
         }
         editor = std::make_shared<OscirenderCodeEditorComponent>(*codeDocument, tokeniser, audioProcessor, audioProcessor.getFileId(originalIndex), audioProcessor.getFileName(originalIndex));
     }
-    
+
     codeDocuments.insert(codeDocuments.begin() + index, codeDocument);
     codeEditors.insert(codeEditors.begin() + index, editor);
     addChildComponent(*editor);
@@ -288,7 +295,6 @@ void OscirenderAudioProcessorEditor::removeCodeEditor(int index) {
     codeEditors.erase(codeEditors.begin() + index);
     codeDocuments.erase(codeDocuments.begin() + index);
 }
-
 
 // parsersLock AND effectsLock must be locked before calling this function
 void OscirenderAudioProcessorEditor::updateCodeEditor(bool binaryFile, bool shouldOpenEditor) {
@@ -306,9 +312,9 @@ void OscirenderAudioProcessorEditor::updateCodeEditor(bool binaryFile, bool shou
             }
         }
     }
-    
+
     collapseButton.setVisible(!binaryFile);
-    
+
     if (!binaryFile) {
         int originalIndex = audioProcessor.getCurrentFileIndex();
         int index = editingCustomFunction ? 0 : audioProcessor.getCurrentFileIndex() + 1;
@@ -330,13 +336,13 @@ void OscirenderAudioProcessorEditor::updateCodeEditor(bool binaryFile, bool shou
             updatingDocumentsWithParserLock = false;
         }
     }
-    
+
     audioProcessor.setProperty("codeEditorVisible", visible);
-    
+
     triggerAsyncUpdate();
 }
 
-// parsersLock MUST be locked before calling this function
+// parsersLock and syphonLock MUST be locked before calling this function
 void OscirenderAudioProcessorEditor::fileUpdated(juce::String fileName, bool shouldOpenEditor) {
     CommonPluginEditor::fileUpdated(fileName);
     settings.fileUpdated(fileName);
@@ -348,17 +354,16 @@ void OscirenderAudioProcessorEditor::handleAsyncUpdate() {
 }
 
 void OscirenderAudioProcessorEditor::changeListenerCallback(juce::ChangeBroadcaster* source) {
-    
     if (source == &audioProcessor.broadcaster) {
         {
-            juce::SpinLock::ScopedLockType lock(audioProcessor.parsersLock);
+            juce::SpinLock::ScopedLockType parsersLock(audioProcessor.parsersLock);
             initialiseCodeEditors();
             settings.update();
         }
         resized();
         repaint();
     } else if (source == &audioProcessor.fileChangeBroadcaster) {
-        juce::SpinLock::ScopedLockType lock(audioProcessor.parsersLock);
+        juce::SpinLock::ScopedLockType parsersLock(audioProcessor.parsersLock);
         // triggered when the audioProcessor changes the current file (e.g. to Blender)
         settings.fileUpdated(audioProcessor.getCurrentFileName());
     }
@@ -460,7 +465,7 @@ bool OscirenderAudioProcessorEditor::keyPressed(const juce::KeyPress& key) {
             fileUpdated(audioProcessor.getCurrentFileName());
         }
     }
-    
+
     CommonPluginEditor::keyPressed(key);
 
     return consumeKey;
