@@ -3,10 +3,10 @@
 	url = ../../Chowdhury-DSP/chowdsp_utils.git
 [submodule "modules/juce_sharedtexture"]
 	path = modules/juce_sharedtexture
-	url = ../juce_sharedtexture.git
+	url = ../../jameshball/juce_sharedtexture.git
 [submodule "modules/osci_render_core"]
 	path = modules/osci_render_core
-	url = ../osci_render_core.git
+	url = ../../jameshball/osci_render_core.git
 [submodule "Source/lua/lua"]
 	path = Source/lua/lua
 	url = ../../lua/lua.git
