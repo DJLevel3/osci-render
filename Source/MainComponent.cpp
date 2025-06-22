@@ -130,17 +130,11 @@ MainComponent::MainComponent(OscirenderAudioProcessor& p, OscirenderAudioProcess
 MainComponent::~MainComponent() {
 }
 
-// syphonLock must be held when calling this function
 void MainComponent::updateFileLabel() {
     showLeftArrow = audioProcessor.getCurrentFileIndex() > 0;
     showRightArrow = audioProcessor.getCurrentFileIndex() < audioProcessor.numFiles() - 1;
 
     {
-#if (JUCE_MAC || JUCE_WINDOWS) && OSCI_PREMIUM
-        if (audioProcessor.syphonInputActive) {
-            fileLabel.setText(pluginEditor.getSyphonSourceName(), juce::dontSendNotification);
-        } else
-#endif
             if (audioProcessor.objectServerRendering) {
             fileLabel.setText("Rendering from Blender", juce::dontSendNotification);
         } else if (audioProcessor.getCurrentFileIndex() == -1) {

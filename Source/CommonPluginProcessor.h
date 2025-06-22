@@ -20,7 +20,6 @@
 #include "components/SwitchButton.h"
 #include "audio/SmoothEffect.h"
 #include "audio/StereoEffect.h"
-#include "audio/Effect.h"
 #include "wav/WavParser.h"
 
 class AudioPlayerListener {

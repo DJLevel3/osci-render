@@ -9,6 +9,7 @@
 #include "SettingsComponent.h"
 #include "components/ErrorCodeEditorComponent.h"
 #include "components/LuaConsole.h"
+#include "components/OsciMainMenuBarModel.h"
 #include "CommonPluginEditor.h"
 
 class OscirenderAudioProcessorEditor : public CommonPluginEditor, private juce::CodeDocument::Listener, public juce::AsyncUpdater, public juce::ChangeListener, public juce::FileDragAndDropTarget {
@@ -82,17 +83,6 @@ public:
     bool keyPressed(const juce::KeyPress& key) override;
     void mouseDown(const juce::MouseEvent& event) override;
     void mouseMove(const juce::MouseEvent& event) override;
-
-#if (JUCE_MAC || JUCE_WINDOWS) && OSCI_PREMIUM
-    // Syphon/Spout input dialog
-    void openSyphonInputDialog();
-    void connectSyphonInput(const juce::String& server, const juce::String& app);
-    void disconnectSyphonInput();
-    juce::String getSyphonSourceName() const;
-
-    juce::SpinLock syphonLock;
-    std::unique_ptr<SyphonFrameGrabber> syphonFrameGrabber;
-#endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OscirenderAudioProcessorEditor)
 };

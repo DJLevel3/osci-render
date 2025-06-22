@@ -74,9 +74,3 @@ void OsciMainMenuBarModel::resetMenuItems() {
         });
     }
 }
-
-#if (JUCE_MAC || JUCE_WINDOWS) && OSCI_PREMIUM
-void OsciMainMenuBarModel::openSyphonInputDialog() {
-    editor.openSyphonInputDialog();
-}
-#endif

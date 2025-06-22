@@ -41,6 +41,11 @@ public:
     juce::String projectFileType;
     juce::String currentFileName;
 
+#if OSCI_PREMIUM
+        DownloaderComponent ffmpegDownloader;
+    SharedTextureManager sharedTextureManager;
+#endif
+
     VolumeComponent volume{audioProcessor};
 
     std::unique_ptr<juce::FileChooser> chooser;
