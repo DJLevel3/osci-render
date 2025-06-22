@@ -67,22 +67,7 @@ void OsciMainMenuBarModel::resetMenuItems() {
         juce::URL("https://osci-render.com/#purchase").launchInDefaultBrowser();
     });
 #endif
-
-    addMenuItem(2, "Recording Settings...", [this] {
-        editor.openRecordingSettings();
-    });
-
-#if (JUCE_MAC || JUCE_WINDOWS) && OSCI_PREMIUM
-    // Add Syphon/Spout input menu item under Recording
-    addMenuItem(2, audioProcessor.syphonInputActive ? "Disconnect Syphon/Spout Input" : "Select Syphon/Spout Input...", [this] {
-        if (audioProcessor.syphonInputActive) {
-            editor.disconnectSyphonInput();
-        } else {
-            openSyphonInputDialog();
-        }
-    });
-#endif
-
+  
     if (editor.processor.wrapperType == juce::AudioProcessor::WrapperType::wrapperType_Standalone) {
         addMenuItem(3, "Settings...", [this] {
             editor.openAudioSettings();

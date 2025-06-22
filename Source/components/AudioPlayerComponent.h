@@ -23,6 +23,8 @@ public:
 private:
     CommonAudioProcessor& audioProcessor;
     
+    TimelineLookAndFeel timelineLookAndFeel;
+	  juce::Slider slider;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPlayerComponent)
     JUCE_DECLARE_WEAK_REFERENCEABLE(AudioPlayerComponent)
 };

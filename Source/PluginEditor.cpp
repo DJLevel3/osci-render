@@ -80,22 +80,6 @@ OscirenderAudioProcessorEditor::OscirenderAudioProcessorEditor(OscirenderAudioPr
 
     addAndMakeVisible(lua);
     addAndMakeVisible(luaResizerBar);
-    addAndMakeVisible(visualiser);
-
-    visualiser.openSettings = [this] {
-        openVisualiserSettings();
-    };
-
-    visualiser.closeSettings = [this] {
-        visualiserSettingsWindow.setVisible(false);
-    };
-
-#if JUCE_WINDOWS
-    // if not standalone, use native title bar for compatibility with DAWs
-    visualiserSettingsWindow.setUsingNativeTitleBar(processor.wrapperType == juce::AudioProcessor::WrapperType::wrapperType_Standalone);
-#elif JUCE_MAC
-    visualiserSettingsWindow.setUsingNativeTitleBar(true);
-#endif
 
     initialiseMenuBar(model);
 }
@@ -179,11 +163,6 @@ void OscirenderAudioProcessorEditor::resized() {
     CommonPluginEditor::resized();
 
     auto area = getLocalBounds();
-
-    if (audioProcessor.visualiserParameters.visualiserFullScreen->getBoolValue()) {
-        visualiser.setBounds(area);
-        return;
-    }
 
     if (!usingNativeMenuBar) {
         auto topBar = area.removeFromTop(25);
@@ -506,67 +485,3 @@ void OscirenderAudioProcessorEditor::mouseMove(const juce::MouseEvent& event) {
         setMouseCursor(juce::MouseCursor::NormalCursor);
     }
 }
-
-void OscirenderAudioProcessorEditor::openVisualiserSettings() {
-    visualiserSettingsWindow.setVisible(true);
-    visualiserSettingsWindow.toFront(true);
-}
-
-#if (JUCE_MAC || JUCE_WINDOWS) && OSCI_PREMIUM
-void OscirenderAudioProcessorEditor::openSyphonInputDialog() {
-    SyphonInputSelectorComponent* selector = nullptr;
-    {
-        selector = new SyphonInputSelectorComponent(
-            sharedTextureManager,
-            [this](const juce::String& server, const juce::String& app) { connectSyphonInput(server, app); },
-            [this]() { disconnectSyphonInput(); },
-            getSyphonSourceName());
-    }
-    juce::DialogWindow::LaunchOptions options;
-    options.content.setOwned(selector);
-    options.content->setSize(350, 120);
-    options.dialogTitle = "Select Syphon/Spout Input";
-    options.dialogBackgroundColour = juce::Colours::darkgrey;
-    options.escapeKeyTriggersCloseButton = true;
-    options.useNativeTitleBar = true;
-    options.resizable = false;
-    options.launchAsync();
-}
-
-void OscirenderAudioProcessorEditor::connectSyphonInput(const juce::String& server, const juce::String& app) {
-    juce::SpinLock::ScopedLockType lock(syphonLock);
-    if (!syphonFrameGrabber) {
-        syphonFrameGrabber = std::make_unique<SyphonFrameGrabber>(sharedTextureManager, server, app, audioProcessor.syphonImageParser);
-        audioProcessor.syphonInputActive = true;
-        model.resetMenuItems();
-        model.menuItemsChanged();
-        {
-            juce::MessageManagerLock lock;
-            audioProcessor.fileChangeBroadcaster.sendChangeMessage();
-        }
-    }
-}
-
-void OscirenderAudioProcessorEditor::disconnectSyphonInput() {
-    juce::SpinLock::ScopedLockType lock(syphonLock);
-    if (!syphonFrameGrabber) {
-        return;
-    }
-    audioProcessor.syphonInputActive = false;
-    syphonFrameGrabber.reset();
-    model.resetMenuItems();
-    model.menuItemsChanged();
-    {
-        juce::MessageManagerLock lock;
-        audioProcessor.fileChangeBroadcaster.sendChangeMessage();
-    }
-}
-
-juce::String OscirenderAudioProcessorEditor::getSyphonSourceName() const {
-    juce::SpinLock::ScopedLockType lock(syphonLock);
-    if (syphonFrameGrabber) {
-        return syphonFrameGrabber->getSourceName();
-    }
-    return "";
-}
-#endif

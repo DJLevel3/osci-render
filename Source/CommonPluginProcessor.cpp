@@ -33,25 +33,6 @@ CommonAudioProcessor::CommonAudioProcessor(const BusesProperties& busesPropertie
     #endif
     
     globalSettings = std::make_unique<juce::PropertiesFile>(options);
-    
-    // locking isn't necessary here because we are in the constructor
-
-    for (auto effect : visualiserParameters.effects) {
-        permanentEffects.push_back(effect);
-        effects.push_back(effect);
-    }
-    
-    for (auto effect : visualiserParameters.audioEffects) {
-        effects.push_back(effect);
-    }
-        
-    for (auto parameter : visualiserParameters.booleans) {
-        booleanParameters.push_back(parameter);
-    }
-    
-    for (auto parameter : visualiserParameters.integers) {
-        intParameters.push_back(parameter);
-    }
 
     muteParameter = new osci::BooleanParameter("Mute", "mute", VERSION_HINT, false, "Mute audio output");
     booleanParameters.push_back(muteParameter);

@@ -2,9 +2,7 @@
 
 #include <JuceHeader.h>
 #include "CommonPluginProcessor.h"
-#include "visualiser/VisualiserComponent.h"
 #include "LookAndFeel.h"
-#include "visualiser/VisualiserSettings.h"
 #include "components/SosciMainMenuBarModel.h"
 #include "components/SvgButton.h"
 #include "components/VolumeComponent.h"
@@ -24,46 +22,24 @@ public:
     void updateTitle();
     void fileUpdated(juce::String fileName);
     void openAudioSettings();
-    void openRecordingSettings();
     void resetToDefault();
     void resized() override;
 
 private:
     CommonAudioProcessor& audioProcessor;
     bool fullScreen = false;
+    
+    juce::File applicationFolder = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory)
+#if JUCE_MAC
+        .getChildFile("Application Support")
+#endif
+        .getChildFile("osci-render");
 public:
     OscirenderLookAndFeel lookAndFeel;
 
     juce::String appName;
     juce::String projectFileType;
     juce::String currentFileName;
-    
-#if OSCI_PREMIUM
-    DownloaderComponent ffmpegDownloader;
-    SharedTextureManager sharedTextureManager;
-#endif
-
-#if OSCI_PREMIUM
-    int VISUALISER_SETTINGS_HEIGHT = 1230;
-#else
-    int VISUALISER_SETTINGS_HEIGHT = 700;
-#endif
-
-    VisualiserSettings visualiserSettings = VisualiserSettings(audioProcessor.visualiserParameters, 3);
-    RecordingSettings recordingSettings = RecordingSettings(audioProcessor.recordingParameters);
-    SettingsWindow recordingSettingsWindow = SettingsWindow("Recording Settings", recordingSettings, 330, 360, 330, 360);
-    VisualiserComponent visualiser{
-        audioProcessor,
-        *this,
-#if OSCI_PREMIUM
-        sharedTextureManager,
-#endif
-        audioProcessor.applicationFolder.getChildFile(audioProcessor.ffmpegFileName),
-        visualiserSettings,
-        recordingSettings,
-        nullptr,
-        appName == "sosci"
-    };
 
     VolumeComponent volume{audioProcessor};
 
