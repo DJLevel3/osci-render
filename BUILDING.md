@@ -2,9 +2,7 @@
 
 # How to compile osci-render and sosci
 
-As osci-render and Sosci are open-source under GPL, you are allowed to compile it yourself and use it commercially! The requirement that you not use osci-render free for commercial purposes only applies to the precompiled binaries, so if you compile it yourself you can get the latest features for free!
-
-This guide covers the process of compiling osci-render for your local machine, as on MacOS, packaging the compiled software for distribution to other computers is complicated and requires paying Apple $100 per year.
+This guide covers the process of compiling osci-render and Sosci for your local machine, as on MacOS, packaging the compiled software for distribution to other computers is complicated and requires paying Apple $100 per year.
 
 ### Table of contents:
 - [Windows](#Windows)
