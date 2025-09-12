@@ -122,7 +122,6 @@ void VisualiserRenderer::runTask(const std::vector<osci::Point> &points) {
             smoothedXSamples.resize(newResampledSize);
             smoothedYSamples.resize(newResampledSize);
             smoothedZSamples.resize(newResampledSize);
-            smoothedZSamples.resize(newResampledSize);
 
             if (parameters.isSweepEnabled()) {
                 // interpolate between sweep values to avoid any artifacts from quickly going from one sweep to the next
