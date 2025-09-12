@@ -2,8 +2,6 @@
 
 # How to compile osci-render and sosci
 
-This guide covers the process of compiling osci-render and Sosci for your local machine, as on MacOS, packaging the compiled software for distribution to other computers is complicated and requires paying Apple $100 per year.
-
 ### Table of contents:
 - [Windows](#Windows)
 - [MacOS](#MacOS)
