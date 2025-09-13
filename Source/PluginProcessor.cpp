@@ -407,6 +407,14 @@ void OscirenderAudioProcessor::clearPreviewEffect() {
 }
 
 void OscirenderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
+    // Set up timing
+#ifdef PROFILE_PROCESSBLOCK
+    LARGE_INTEGER StartingTime, EndingTime, ElapsedNanoseconds;
+    LARGE_INTEGER Frequency;
+    QueryPerformanceFrequency(&Frequency);
+    QueryPerformanceCounter(&StartingTime);
+#endif
+
     juce::ScopedNoDenormals noDenormals;
     // Audio info variables
     int totalNumInputChannels = getTotalNumInputChannels();
@@ -629,6 +637,23 @@ void OscirenderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
             playTimeBeats += sTimeBeats;
         }
     }
+
+#ifdef PROFILE_PROCESSBLOCK
+    QueryPerformanceCounter(&EndingTime);
+    ElapsedNanoseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+    ElapsedNanoseconds.QuadPart *= 1000000000;
+    ElapsedNanoseconds.QuadPart /= Frequency.QuadPart;
+    processBlockTotalNanoseconds += ElapsedNanoseconds.QuadPart;
+    processBlockTotalSamples += bufSamples;
+    processBlockRunCounter = (processBlockRunCounter + 1) % PROFILE_DIVIDER;
+    if (processBlockRunCounter == 0) {
+        double nsps = processBlockTotalNanoseconds / processBlockTotalSamples;
+        juce::String output = juce::String(nsps) + "," + juce::String((nsps * sampleRate / 10000000)) + "%\n";
+        OutputDebugString(output.toRawUTF8());
+        processBlockTotalNanoseconds = 0;
+        processBlockTotalSamples = 0;
+    }
+#endif
 
     // used for any callback that must guarantee all audio is recieved (e.g. when recording to a file)
     juce::SpinLock::ScopedLockType lock(audioThreadCallbackLock);

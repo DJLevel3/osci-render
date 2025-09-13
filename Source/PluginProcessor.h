@@ -24,6 +24,16 @@
 #include "audio/ShapeVoice.h"
 #include "obj/ObjectServer.h"
 
+// set to 1 to enable profiling of processBlock on Windows
+#define WINPROFILE 1
+
+// no touchy! If you want to disable or enable profiling, do so above
+#if JUCE_WINDOWS && WINPROFILE
+#define PROFILE_DIVIDER 50
+#include <Windows.h>
+#define PROFILE_PROCESSBLOCK
+#endif
+
 #if (JUCE_MAC || JUCE_WINDOWS) && OSCI_PREMIUM
 #include "../modules/juce_sharedtexture/SharedTexture.h"
 #include "video/SyphonFrameGrabber.h"
@@ -39,6 +49,12 @@ class OscirenderAudioProcessor : public CommonAudioProcessor, juce::AudioProcess
 #endif
 {
 public:
+#ifdef PROFILE_PROCESSBLOCK
+    int processBlockRunCounter = 0;
+    double processBlockTotalNanoseconds = 0;
+    int processBlockTotalSamples = 0;
+#endif
+
     OscirenderAudioProcessor();
     ~OscirenderAudioProcessor() override;
 
