@@ -420,6 +420,7 @@ void OscirenderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
     int totalNumInputChannels = getTotalNumInputChannels();
     int totalNumOutputChannels = getTotalNumOutputChannels();
     double sampleRate = getSampleRate();
+    int bufSamples = buffer.getNumSamples();
 
     // MIDI transport info variables (defaults to 60bpm, 4/4 time signature at zero seconds and not playing)
     double bpm = 60;
@@ -513,7 +514,7 @@ void OscirenderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
     } else {
         juce::SpinLock::ScopedLockType lock1(parsersLock);
         juce::SpinLock::ScopedLockType lock2(effectsLock);
-        synth.renderNextBlock(outputBuffer3d, midiMessages, 0, buffer.getNumSamples());
+        synth.renderNextBlock(outputBuffer3d, midiMessages, 0, bufSamples);
         for (int i = 0; i < synth.getNumVoices(); i++) {
             auto voice = dynamic_cast<ShapeVoice*>(synth.getVoice(i));
             if (voice->isVoiceActive()) {
@@ -527,13 +528,23 @@ void OscirenderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 
     auto* channelData = buffer.getArrayOfWritePointers();
 
-    for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
+    std::vector<osci::Point> channelVector;
+    std::vector <osci::Point> luaExternalVector;
+    std::vector<double> volumeVector;
+    channelVector.reserve(bufSamples);
+    luaExternalVector.reserve(bufSamples);
+    volumeVector.reserve(bufSamples);
+
+
+    for (int sample = 0; sample < bufSamples; ++sample) {
         if (animateFrames->getBoolValue()) {
             if (juce::JUCEApplicationBase::isStandaloneApp()) {
                 animationFrame = animationFrame + sTimeSec * animationRate->getValueUnnormalised();
-            } else if (animationSyncBPM->getValue()) {
+            }
+            else if (animationSyncBPM->getValue()) {
                 animationFrame = playTimeBeats * animationRate->getValueUnnormalised() + animationOffset->getValueUnnormalised();
-            } else {
+            }
+            else {
                 animationFrame = playTimeSeconds * animationRate->getValueUnnormalised() + animationOffset->getValueUnnormalised();
             }
 
@@ -543,7 +554,8 @@ void OscirenderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
                 int totalFrames = sounds[currentFile]->parser->getNumFrames();
                 if (loopAnimation->getBoolValue()) {
                     animationFrame = std::fmod(animationFrame, totalFrames);
-                } else {
+                }
+                else {
                     animationFrame = juce::jlimit(0.0, (double)totalFrames - 1, animationFrame.load());
                 }
                 sounds[currentFile]->parser->setFrame(animationFrame);
@@ -555,7 +567,8 @@ void OscirenderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
         if (totalNumInputChannels >= 2) {
             left = inputBuffer.getSample(0, sample);
             right = inputBuffer.getSample(1, sample);
-        } else if (totalNumInputChannels == 1) {
+        }
+        else if (totalNumInputChannels == 1) {
             left = inputBuffer.getSample(0, sample);
             right = inputBuffer.getSample(0, sample);
         }
@@ -569,43 +582,59 @@ void OscirenderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
         currentVolume = std::sqrt(squaredVolume);
         currentVolume = juce::jlimit(0.0, 1.0, currentVolume);
 
-        osci::Point channels = {outputBuffer3d.getSample(0, sample), outputBuffer3d.getSample(1, sample), outputBuffer3d.getSample(2, sample)};
+        osci::Point channels = { outputBuffer3d.getSample(0, sample), outputBuffer3d.getSample(1, sample), outputBuffer3d.getSample(2, sample) };
+        osci::Point luaExternal = { left, right };
 
-        {
-            juce::SpinLock::ScopedLockType lock1(parsersLock);
-            juce::SpinLock::ScopedLockType lock2(effectsLock);
-            if (volume > EPSILON) {
-                for (auto& effect : toggleableEffects) {
-                    bool isEnabled = effect->enabled != nullptr && effect->enabled->getValue();
-                    bool isSelected = effect->selected == nullptr ? true : effect->selected->getBoolValue();
-                    if (isEnabled && isSelected) {
-                        if (effect->getId() == custom->getId()) {
-                            effect->setExternalInput(osci::Point{ left, right });
-                        }
-                        channels = effect->apply(sample, channels, currentVolume);
+        channelVector.push_back(channels);
+        luaExternalVector.push_back(luaExternal);
+        volumeVector.push_back(currentVolume);
+    }
+
+    // Apply the effects
+    {
+        juce::SpinLock::ScopedLockType lock1(parsersLock);
+        juce::SpinLock::ScopedLockType lock2(effectsLock);
+        if (volume > EPSILON) {
+            for (auto& effect : toggleableEffects) {
+                bool isEnabled = effect->enabled != nullptr && effect->enabled->getValue();
+                bool isSelected = effect->selected == nullptr ? true : effect->selected->getBoolValue();
+                if (isEnabled && isSelected) {
+                    if (effect->getId() == custom->getId()) {
+                        effect->applyBlock(0, bufSamples, channelVector, volumeVector, luaExternalVector);
                     }
-                }
-                // Apply preview effect if present and not already active in the main chain
-                if (previewEffect) {
-                    const bool prevEnabled = (previewEffect->enabled != nullptr) && previewEffect->enabled->getValue();
-                    const bool prevSelected = (previewEffect->selected == nullptr) ? true : previewEffect->selected->getBoolValue();
-                    if (!(prevEnabled && prevSelected)) {
-                        if (previewEffect->getId() == custom->getId())
-                            previewEffect->setExternalInput(osci::Point{ left, right });
-                        channels = previewEffect->apply(sample, channels, currentVolume);
+                    else {
+                        effect->applyBlock(0, bufSamples, channelVector, volumeVector);
                     }
                 }
             }
-            for (auto& effect : permanentEffects) {
-                channels = effect->apply(sample, channels, currentVolume);
-            }
-            auto lua = currentFile >= 0 ? sounds[currentFile]->parser->getLua() : nullptr;
-            if (lua != nullptr || custom->enabled->getBoolValue()) {
-                for (auto& effect : luaEffects) {
-                    effect->apply(sample, channels, currentVolume);
+            // Apply preview effect if present and not already active in the main chain
+            if (previewEffect) {
+                const bool prevEnabled = (previewEffect->enabled != nullptr) && previewEffect->enabled->getValue();
+                const bool prevSelected = (previewEffect->selected == nullptr) ? true : previewEffect->selected->getBoolValue();
+                if (!(prevEnabled && prevSelected)) {
+                    if (previewEffect->getId() == custom->getId()) {
+                        previewEffect->applyBlock(0, bufSamples, channelVector, volumeVector, luaExternalVector);
+                    }
+                    else {
+                        previewEffect->applyBlock(0, bufSamples, channelVector, volumeVector);
+                    }
                 }
             }
         }
+        auto lua = currentFile >= 0 ? sounds[currentFile]->parser->getLua() : nullptr;
+        if (lua != nullptr || custom->enabled->getBoolValue()) {
+            for (auto& effect : luaEffects) {
+                effect->applyBlock(0, bufSamples, channelVector, volumeVector);
+            }
+        }
+        for (auto& effect : permanentEffects) {
+            effect->applyBlock(0, bufSamples, channelVector, volumeVector);
+        }
+    }
+
+    for (int sample = 0; sample < bufSamples; sample++)
+    {
+        osci::Point channels = channelVector[sample];
 
         double x = channels.x;
         double y = channels.y;
