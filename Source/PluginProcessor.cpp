@@ -648,10 +648,6 @@ void OscirenderAudioProcessor::getStateInformation(juce::MemoryBlock& destData) 
     // there are issues. This is the only place we can do this because there is
     // no callback when closing the standalone app except for this.
 
-    if (haltRecording != nullptr && juce::JUCEApplicationBase::isStandaloneApp()) {
-        haltRecording();
-    }
-
     juce::SpinLock::ScopedLockType lock1(parsersLock);
     juce::SpinLock::ScopedLockType lock2(effectsLock);
 
@@ -697,8 +693,6 @@ void OscirenderAudioProcessor::getStateInformation(juce::MemoryBlock& destData) 
         fileXml->addTextElement(base64);
     }
     xml->setAttribute("currentFile", currentFile);
-
-    recordingParameters.save(xml.get());
 
     saveProperties(*xml);
 
@@ -818,8 +812,6 @@ void OscirenderAudioProcessor::setStateInformation(const void* data, int sizeInB
             }
         }
         changeCurrentFile(xml->getIntAttribute("currentFile", -1));
-
-        recordingParameters.load(xml.get());
 
         loadProperties(*xml);
         objectServer.reload();

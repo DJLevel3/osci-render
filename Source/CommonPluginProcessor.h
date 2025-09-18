@@ -12,8 +12,6 @@
 #include <JuceHeader.h>
 #include <any>
 #include "audio/SampleRateManager.h"
-#include "visualiser/VisualiserSettings.h"
-#include "visualiser/RecordingSettings.h"
 #include "wav/WavParser.h"
 
 class AudioPlayerListener {
@@ -125,11 +123,8 @@ public:
 
     std::atomic<double> currentSampleRate = 0.0;
     juce::SpinLock effectsLock;
-    VisualiserParameters visualiserParameters;
-    RecordingParameters recordingParameters;
     
     osci::AudioBackgroundThreadManager threadManager;
-    std::function<void()> haltRecording;
     
     std::atomic<bool> forceDisableBrightnessInput = false;
 

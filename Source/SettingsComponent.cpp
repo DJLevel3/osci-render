@@ -33,35 +33,9 @@ SettingsComponent::SettingsComponent(OscirenderAudioProcessor& p, OscirenderAudi
     mainLayout.setItemLayout(2, -0.1, -0.9, -(1.0 + mainLayoutPreferredSize));
 
     addAndMakeVisible(editor.volume);
-
-    osci::BooleanParameter* visualiserFullScreen = audioProcessor.visualiserParameters.visualiserFullScreen;
-    pluginEditor.visualiser.setFullScreen(visualiserFullScreen->getBoolValue());
-
-    addAndMakeVisible(pluginEditor.visualiser);
-    pluginEditor.visualiser.setFullScreenCallback([this, visualiserFullScreen](FullScreenMode mode) {
-        if (mode == FullScreenMode::TOGGLE) {
-            visualiserFullScreen->setBoolValueNotifyingHost(!visualiserFullScreen->getBoolValue());
-        } else if (mode == FullScreenMode::FULL_SCREEN) {
-            visualiserFullScreen->setBoolValueNotifyingHost(true);
-        } else if (mode == FullScreenMode::MAIN_COMPONENT) {
-            visualiserFullScreen->setBoolValueNotifyingHost(false);
-        }
-
-        pluginEditor.visualiser.setFullScreen(visualiserFullScreen->getBoolValue());
-
-        pluginEditor.resized();
-        pluginEditor.repaint();
-        resized();
-        repaint();
-    });
-
-    pluginEditor.visualiser.setColour(VisualiserComponent::buttonRowColourId, juce::Colours::black);
-
-    visualiserFullScreen->addListener(this);
 }
 
 SettingsComponent::~SettingsComponent() {
-    audioProcessor.visualiserParameters.visualiserFullScreen->removeListener(this);
 }
 
 void SettingsComponent::parameterValueChanged(int parameterIndex, float newValue) {
@@ -108,16 +82,6 @@ void SettingsComponent::resized() {
 
     auto volumeArea = bounds.removeFromLeft(30);
     pluginEditor.volume.setBounds(volumeArea.withSizeKeepingCentre(volumeArea.getWidth(), juce::jmin(volumeArea.getHeight(), 300)));
-
-    if (!audioProcessor.visualiserParameters.visualiserFullScreen->getBoolValue()) {
-        auto minDim = juce::jmin(bounds.getWidth(), bounds.getHeight());
-        juce::Point<int> localTopLeft = {bounds.getX(), bounds.getY()};
-        juce::Point<int> topLeft = pluginEditor.getLocalPoint(this, localTopLeft);
-        auto shiftedBounds = bounds;
-        shiftedBounds.setX(topLeft.getX());
-        shiftedBounds.setY(topLeft.getY());
-        pluginEditor.visualiser.setBounds(shiftedBounds);
-    }
 
     juce::Component* effectSettings = nullptr;
     auto dummyBounds = dummy.getBounds();

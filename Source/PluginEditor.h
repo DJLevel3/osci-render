@@ -10,7 +10,6 @@
 #include "components/ErrorCodeEditorComponent.h"
 #include "components/LuaConsole.h"
 #include "components/OsciMainMenuBarModel.h"
-#include "visualiser/VisualiserSettings.h"
 
 class OscirenderAudioProcessorEditor : public CommonPluginEditor, private juce::CodeDocument::Listener, public juce::AsyncUpdater, public juce::ChangeListener, public juce::FileDragAndDropTarget {
 public:
@@ -28,7 +27,6 @@ public:
     void handleAsyncUpdate() override;
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
     void toggleLayout(juce::StretchableLayoutManager& layout, double prefSize);
-    void openVisualiserSettings();
     bool isInterestedInFileDrag(const juce::StringArray& files) override;
     void filesDropped(const juce::StringArray& files, int x, int y) override;
 
@@ -53,8 +51,6 @@ public:
 
     juce::ComponentAnimator codeEditorAnimator;
     LuaComponent lua{audioProcessor, *this};
-
-    SettingsWindow visualiserSettingsWindow = SettingsWindow("Visualiser Settings", visualiserSettings, 550, 500, 1500, VISUALISER_SETTINGS_HEIGHT);
 
     LuaConsole console;
 

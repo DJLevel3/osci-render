@@ -2,16 +2,16 @@
 
 #include <JuceHeader.h>
 #include "CommonPluginProcessor.h"
-#include "visualiser/VisualiserComponent.h"
 #include "LookAndFeel.h"
-#include "visualiser/VisualiserSettings.h"
 #include "components/SosciMainMenuBarModel.h"
 #include "components/SvgButton.h"
 #include "components/VolumeComponent.h"
 #include "components/DownloaderComponent.h"
 
 #if DEBUG
+#if MELATONIN
     #include "melatonin_inspector/melatonin_inspector.h"
+#endif
 #endif
 
 class CommonPluginEditor : public juce::AudioProcessorEditor {
@@ -28,7 +28,6 @@ public:
     void updateTitle();
     void fileUpdated(juce::String fileName);
     void openAudioSettings();
-    void openRecordingSettings();
     void resetToDefault();
     void resized() override;
 
@@ -47,28 +46,6 @@ public:
     SharedTextureManager sharedTextureManager;
 #endif
 
-#if OSCI_PREMIUM
-    int VISUALISER_SETTINGS_HEIGHT = 1230;
-#else
-    int VISUALISER_SETTINGS_HEIGHT = 700;
-#endif
-
-    VisualiserSettings visualiserSettings = VisualiserSettings(audioProcessor.visualiserParameters, 3);
-    RecordingSettings recordingSettings = RecordingSettings(audioProcessor.recordingParameters);
-    SettingsWindow recordingSettingsWindow = SettingsWindow("Recording Settings", recordingSettings, 330, 360, 330, 360);
-    VisualiserComponent visualiser{
-        audioProcessor,
-        *this,
-#if OSCI_PREMIUM
-        sharedTextureManager,
-#endif
-        audioProcessor.applicationFolder.getChildFile(audioProcessor.ffmpegFileName),
-        visualiserSettings,
-        recordingSettings,
-        nullptr,
-        appName == "sosci"
-    };
-
     VolumeComponent volume{audioProcessor};
 
     std::unique_ptr<juce::FileChooser> chooser;
@@ -83,7 +60,9 @@ public:
 #endif
 
 #if DEBUG
+#if MELATONIN
     melatonin::Inspector inspector { *this, false };
+#endif
 #endif
 
     bool keyPressed(const juce::KeyPress& key) override;
