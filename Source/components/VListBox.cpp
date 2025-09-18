@@ -166,7 +166,7 @@ public:
         setWantsKeyboardFocus (false);
 
     auto content = new juce::Component();
-    setViewedComponent(content, false);
+    setViewedComponent(content, true);
         content->setWantsKeyboardFocus (false);
 
     // Enable scroll fades for list views by default
