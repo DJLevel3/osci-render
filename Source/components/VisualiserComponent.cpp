@@ -4,7 +4,7 @@
 VisualiserComponent::VisualiserComponent(SampleRateManager& sampleRateManager, ConsumerManager& consumerManager, VisualiserSettings& settings, VisualiserComponent* parent, bool useOldVisualiser, bool visualiserOnly) : settings(settings), backgroundColour(juce::Colours::black), waveformColour(juce::Colour(0xff00ff00)), sampleRateManager(sampleRateManager), consumerManager(consumerManager), oldVisualiser(useOldVisualiser), visualiserOnly(visualiserOnly), juce::Thread("VisualiserComponent"), parent(parent) {
     resetBuffer();
     if (!oldVisualiser) {
-        initialiseBrowser();
+        oldVisualiser = true;
     }
     startTimerHz(60);
     startThread();
@@ -30,7 +30,6 @@ VisualiserComponent::VisualiserComponent(SampleRateManager& sampleRateManager, C
     addChildComponent(settingsButton);
     
     fullScreenButton.onClick = [this]() {
-        enableFullScreen();
     };
     
     settingsButton.onClick = [this]() {
@@ -138,8 +137,7 @@ void VisualiserComponent::run() {
         
         setBuffer(tempBuffer);
         if (!oldVisualiser) {
-            audioUpdated = true;
-            triggerAsyncUpdate();
+            oldVisualiser = true;
         }
     }
 }
@@ -161,14 +159,14 @@ void VisualiserComponent::setPaused(bool paused) {
 }
 
 void VisualiserComponent::mouseDown(const juce::MouseEvent& event) {
-    if (!oldVisualiser) return;
+    if (!oldVisualiser) oldVisualiser=true;
     if (event.mods.isLeftButtonDown() && child == nullptr) {
         setPaused(active);
     }
 }
 
 void VisualiserComponent::mouseMove(const juce::MouseEvent& event) {
-    if (!oldVisualiser) return;
+    if (!oldVisualiser) oldVisualiser = true;
     if (event.getScreenX() == lastMouseX && event.getScreenY() == lastMouseY) {
         return;
     }
@@ -187,33 +185,10 @@ void VisualiserComponent::mouseMove(const juce::MouseEvent& event) {
     auto pos = event.getScreenPosition();
     auto parent = this->parent;
     
-    juce::Timer::callAfterDelay(1000, [this, newTimerId, pos, parent]() {
-        if (parent == nullptr || parent->child == this) {
-            bool onButtonRow = settingsButton.getScreenBounds().contains(pos);
-            if (parent == nullptr) {
-                onButtonRow |= fullScreenButton.getScreenBounds().contains(pos);
-            }
-            if (child == nullptr && parent == nullptr) {
-                onButtonRow |= popOutButton.getScreenBounds().contains(pos);
-            }
-            if (timerId == newTimerId && !onButtonRow) {
-                fullScreenButton.setVisible(false);
-                popOutButton.setVisible(false);
-                settingsButton.setVisible(false);
-                repaint();
-            }
-        }
-    });
     repaint();
 }
 
 bool VisualiserComponent::keyPressed(const juce::KeyPress& key) {
-    if (key.isKeyCode(juce::KeyPress::escapeKey)) {
-        if (fullScreenCallback) {
-            fullScreenCallback(FullScreenMode::MAIN_COMPONENT);
-        }
-        return true;
-    }
 
     return false;
 }
@@ -221,6 +196,7 @@ bool VisualiserComponent::keyPressed(const juce::KeyPress& key) {
 void VisualiserComponent::setFullScreen(bool fullScreen) {}
 
 void VisualiserComponent::setVisualiserType(bool oldVisualiser) {
+    oldVisualiser = true;
     this->oldVisualiser = oldVisualiser;
     if (child != nullptr) {
         child->setVisualiserType(oldVisualiser);
@@ -248,7 +224,7 @@ void VisualiserComponent::paintXY(juce::Graphics& g, juce::Rectangle<float> area
     }
 
     double strength = 15;
-    double widthDivisor = 160;
+    double widthDivisor = 320;
     double lengthIntensityScale = 700;
     juce::Colour waveColor = waveformColour;
 

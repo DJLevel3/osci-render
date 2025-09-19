@@ -49,22 +49,6 @@ juce::PopupMenu MainMenuBarModel::getMenuForIndex(int topLevelMenuIndex, const j
 void MainMenuBarModel::menuItemSelected(int menuItemID, int topLevelMenuIndex) {
     switch (topLevelMenuIndex) {
         case 0:
-            switch (menuItemID) {
-                case 1:
-                    editor.openProject();
-                    break;
-                case 2:
-                    editor.saveProject();
-                    break;
-                case 3:
-                    editor.saveProjectAs();
-                    break;
-                case 4:
-                    editor.resetToDefault();
-                    break;
-                default:
-                    break;
-            }
             break;
         case 1: {
             audioProcessor.visualiserParameters.legacyVisualiserEnabled->setBoolValueNotifyingHost(!audioProcessor.visualiserParameters.legacyVisualiserEnabled->getBoolValue());

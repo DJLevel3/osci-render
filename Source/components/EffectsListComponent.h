@@ -54,18 +54,11 @@ struct AudioEffectListBoxItemData : public DraggableListBoxItemData
 		for (int i = 0; i < data.size(); i++) {
 			data[i]->setPrecedence(i);
 		}
-
-		audioProcessor.updateEffectPrecedence();
     }
 
     void resetData() {
         juce::SpinLock::ScopedLockType lock(audioProcessor.effectsLock);
         data.clear();
-        for (int i = 0; i < audioProcessor.toggleableEffects.size(); i++) {
-            auto effect = audioProcessor.toggleableEffects[i];
-            effect->setValue(effect->getValue());
-            data.push_back(effect);
-        }
     }
 
     int getNumItems() override {
@@ -97,7 +90,6 @@ struct AudioEffectListBoxItemData : public DraggableListBoxItemData
 			data[i]->setPrecedence(i);
 		}
 
-        audioProcessor.updateEffectPrecedence();
 	}
 
     void moveAfter(int indexOfItemToMove, int indexOfItemToPlaceAfter) override {
@@ -115,7 +107,6 @@ struct AudioEffectListBoxItemData : public DraggableListBoxItemData
             data[i]->setPrecedence(i);
         }
 
-        audioProcessor.updateEffectPrecedence();
     }
 
     template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIndex) {
@@ -177,7 +168,6 @@ public:
         : DraggableListBoxModel(lb, md) {
         OscirenderAudioProcessor& audioProcessor = ((AudioEffectListBoxItemData&)md).audioProcessor;
         juce::SpinLock::ScopedLockType lock(audioProcessor.effectsLock);
-        audioProcessor.updateEffectPrecedence();
     }
 
     int getRowHeight(int row) override;

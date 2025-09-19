@@ -3,15 +3,11 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "SettingsComponent.h"
-#include "MidiComponent.h"
-#include "components/VolumeComponent.h"
 #include "components/MainMenuBarModel.h"
 #include "LookAndFeel.h"
-#include "components/ErrorCodeEditorComponent.h"
-#include "components/LuaConsole.h"
 #include "components/VisualiserSettings.h"
 
-class OscirenderAudioProcessorEditor : public juce::AudioProcessorEditor, private juce::CodeDocument::Listener, public juce::AsyncUpdater, public juce::ChangeListener {
+class OscirenderAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::AsyncUpdater, public juce::ChangeListener {
 public:
     OscirenderAudioProcessorEditor(OscirenderAudioProcessor&);
     ~OscirenderAudioProcessorEditor() override;
@@ -19,21 +15,10 @@ public:
     void paint(juce::Graphics&) override;
     void resized() override;
     
-    bool isBinaryFile(juce::String name);
-    void initialiseCodeEditors();
-    void addCodeEditor(int index);
-    void removeCodeEditor(int index);
-    void fileUpdated(juce::String fileName, bool shouldOpenEditor = false);
     void handleAsyncUpdate() override;
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
     void toggleLayout(juce::StretchableLayoutManager& layout, double prefSize);
 
-    void editCustomFunction(bool enabled);
-
-    void newProject();
-    void openProject();
-    void saveProject();
-    void saveProjectAs();
     void updateTitle();
     void openAudioSettings();
     void resetToDefault();
@@ -47,30 +32,16 @@ public:
 
     OscirenderLookAndFeel lookAndFeel;
 
-    std::atomic<bool> editingCustomFunction = false;
-
     VisualiserSettings visualiserSettings = VisualiserSettings(audioProcessor.visualiserParameters);
     SettingsWindow visualiserSettingsWindow = SettingsWindow("Visualiser Settings");
     VisualiserComponent visualiser{audioProcessor, audioProcessor, visualiserSettings, nullptr, audioProcessor.visualiserParameters.legacyVisualiserEnabled->getBoolValue()};
 
     SettingsComponent settings{audioProcessor, *this};
-
-    juce::ComponentAnimator codeEditorAnimator;
-    LuaComponent lua{audioProcessor, *this};
-    VolumeComponent volume{audioProcessor};
-
-    LuaConsole console;
-
-    std::vector<std::shared_ptr<juce::CodeDocument>> codeDocuments;
-    std::vector<std::shared_ptr<OscirenderCodeEditorComponent>> codeEditors;
+    
     juce::CodeEditorComponent::ColourScheme colourScheme;
-    juce::LuaTokeniser luaTokeniser;
     juce::XmlTokeniser xmlTokeniser;
 	juce::ShapeButton collapseButton;
-    std::shared_ptr<juce::CodeDocument> customFunctionCodeDocument = std::make_shared<juce::CodeDocument>();
-    std::shared_ptr<OscirenderCodeEditorComponent> customFunctionCodeEditor = std::make_shared<OscirenderCodeEditorComponent>(*customFunctionCodeDocument, &luaTokeniser, audioProcessor, CustomEffect::UNIQUE_ID, CustomEffect::FILE_NAME);
 
-    std::unique_ptr<juce::FileChooser> chooser;
     MainMenuBarModel menuBarModel{audioProcessor, *this};
     juce::MenuBarComponent menuBar;
 
@@ -83,18 +54,11 @@ public:
     juce::TooltipWindow tooltipWindow{nullptr, 0};
     juce::DropShadower tooltipDropShadow{juce::DropShadow(juce::Colours::black.withAlpha(0.5f), 6, {0,0})};
 
-    std::atomic<bool> updatingDocumentsWithParserLock = false;
-
     bool usingNativeMenuBar = false;
 
 #if JUCE_LINUX
     juce::OpenGLContext openGlContext;
 #endif
-
-	void codeDocumentTextInserted(const juce::String& newText, int insertIndex) override;
-	void codeDocumentTextDeleted(int startIndex, int endIndex) override;
-    void updateCodeDocument();
-    void updateCodeEditor(bool binaryFile, bool shouldOpenEditor = false);
 
     bool keyPressed(const juce::KeyPress& key) override;
     void mouseDown(const juce::MouseEvent& event) override;
