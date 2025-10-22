@@ -686,6 +686,13 @@ void VisualiserRenderer::drawLine(const std::vector<float> &xPoints, const std::
     std::vector<float> colorData;
     if (mode == RenderMode::XYRGB) colorData.resize(nPoints * 12);
 
+    if (mode == RenderMode::XYZ) {
+        jassert(xPoints.size() == brightnessPoints->size());
+    }
+    else if (mode == RenderMode::XYRGB) {
+        jassert(xPoints.size() == rPoints.size());
+    }
+
     for (int i = 0; i < nPoints; ++i) {
         int p = i * 12;
         float x = xPoints[i];
