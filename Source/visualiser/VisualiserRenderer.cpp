@@ -788,46 +788,6 @@ void VisualiserRenderer::drawLine(const std::vector<float> &xPoints, const std::
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexIndexBuffer);
     int nEdgesThisTime = xPoints.size() - 1;
-    jassert(nEdgesThisTime <= nEdges);
-#if DEBUG == 1 
-    // TODO - this checks to see if there's a gap between the last buffer and the current one
-    if (nEdgesThisTime == 19199) {
-        switch (mode) {
-        case RenderMode::XYRGB:
-            if (lastBufferEndpointR != -10 && lastBufferEndpointG != -10 && lastBufferEndpointB != -10) {
-                float curR = rPoints[0];
-                float curG = gPoints[0];
-                float curB = bPoints[0];
-                jassert(abs(lastBufferEndpointR - rPoints[0]) < GAP_THRESHOLD);
-                jassert(abs(lastBufferEndpointG - gPoints[0]) < GAP_THRESHOLD);
-                jassert(abs(lastBufferEndpointB - bPoints[0]) < GAP_THRESHOLD);
-            }
-            lastBufferEndpointR = rPoints[19199];
-            lastBufferEndpointG = gPoints[19199];
-            lastBufferEndpointB = bPoints[19199];
-        case RenderMode::XY:
-            if (lastBufferEndpointX != -10 && lastBufferEndpointY != -10) {
-                float curX = xPoints[0];
-                float curY = yPoints[0];
-                jassert(abs(lastBufferEndpointX - xPoints[0]) < GAP_THRESHOLD);
-                jassert(abs(lastBufferEndpointY - yPoints[0]) < GAP_THRESHOLD);
-            }
-            lastBufferEndpointX = xPoints[19199];
-            lastBufferEndpointY = yPoints[19199];
-            break;
-        case RenderMode::XYZ:
-            if (lastBufferEndpointX != -10 && lastBufferEndpointY != -10 && lastBufferEndpointZ != -10) {
-                jassert(abs(lastBufferEndpointX - xPoints[0]) < GAP_THRESHOLD);
-                jassert(abs(lastBufferEndpointY - yPoints[0]) < GAP_THRESHOLD);
-                jassert(abs(lastBufferEndpointZ - (*brightnessPoints)[0]) < GAP_THRESHOLD);
-            }
-            lastBufferEndpointX = xPoints[19199];
-            lastBufferEndpointY = yPoints[19199];
-            lastBufferEndpointZ = (*brightnessPoints)[19199];
-            break;
-        }
-    }
-#endif
     glDrawElements(GL_TRIANGLES, nEdgesThisTime * 6, GL_UNSIGNED_INT, 0);
 
     glDisableVertexAttribArray(aStartLoc);
