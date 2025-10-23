@@ -128,6 +128,7 @@ void SosciAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
     // Process output sample-by-sample for visualiser, volume, clipping
     auto outputArray = output.getArrayOfWritePointers();
     
+    jassert(numSamples <= threadManager.samplesPerBlock);
     for (int sample = 0; sample < numSamples; ++sample) {
         osci::Point point(workArray[0][sample], workArray[1][sample], workArray[2][sample], 
                          workArray[3][sample], workArray[4][sample], workArray[5][sample]);

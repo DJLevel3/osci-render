@@ -165,7 +165,7 @@ private:
     int resolution;
     double frameRate;
 
-    const double RESAMPLE_RATIO = 6.0;
+    const double RESAMPLE_RATIO = 4.0;
     double sampleRate = -1;
     double oldSampleRate = -1;
     chowdsp::ResamplingTypes::LanczosResampler<2048, 8> xResampler;
@@ -205,6 +205,16 @@ private:
 
     Texture createScreenTexture();
     Texture createReflectionTexture();
+
+#if DEBUG == 1
+#define GAP_THRESHOLD 0.001f
+    float lastBufferEndpointX = -10.f;
+    float lastBufferEndpointY = -10.f;
+    float lastBufferEndpointZ = -10.f;
+    float lastBufferEndpointR = -10.f;
+    float lastBufferEndpointG = -10.f;
+    float lastBufferEndpointB = -10.f;
+#endif
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VisualiserRenderer)
     JUCE_DECLARE_WEAK_REFERENCEABLE(VisualiserRenderer)

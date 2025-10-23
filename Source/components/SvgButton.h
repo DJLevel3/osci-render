@@ -144,8 +144,8 @@ private:
         .withEasing([] (float t) { return juce::dsp::FastMathApproximations::sin(3.14159 * t) / 2 + 0.5; })
         .withDurationMs(500)
         .runningInfinitely()
-        .withValueChangedCallback([this] (auto value) {
-            colourFade = value;
+        .withValueChangedCallback([this] (float value) {
+            colourFade = fmax(0.0f, value);
             repaint();
         })
         .build();
