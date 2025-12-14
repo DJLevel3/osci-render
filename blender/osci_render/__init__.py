@@ -91,7 +91,7 @@ class osci_render_save(bpy.types.Operator, ImportHelper):
             try:
                 self.bin, self.currentFrame, self.foa, self.ma = save_scene_to_file(bpy.context.scene, self.bin, self.currentFrame, self.foa, self.ma)
             except Exception as err:
-                raise(err)
+                print(err)
                 self.report({"ERROR"}, "All lineart objects must be baked to export! Bake all objects and try again.")
                 context.window_manager.progress_end()
                 context.window_manager.event_timer_remove(self._timer)
