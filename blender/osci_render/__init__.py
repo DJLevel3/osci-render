@@ -18,6 +18,7 @@ import json
 import atexit
 import struct
 import base64
+from time import monotonic
 from bpy.props import StringProperty
 from bpy.app.handlers import persistent
 from bpy_extras.io_utils import ImportHelper
@@ -83,6 +84,35 @@ class osci_render_save(bpy.types.Operator, ImportHelper):
         options={"HIDDEN"}
     )
     
+    _timer = None
+    
+    def modal(self, context, event):
+        if event.type == 'TIMER':
+            try:
+                self.bin, self.currentFrame, self.foa, self.ma = save_scene_to_file(bpy.context.scene, self.bin, self.currentFrame, self.foa, self.ma)
+            except Exception as err:
+                raise(err)
+                self.report({"ERROR"}, "All lineart objects must be baked to export! Bake all objects and try again.")
+                context.window_manager.progress_end()
+                context.window_manager.event_timer_remove(self._timer)
+                return {"CANCELLED"}
+            
+            if self.currentFrame == bpy.context.scene.frame_end + 1:
+                self.bin.extend(("END GPLA").encode("utf8"))
+                if self.FilePath is not None:
+                    with open(self.FilePath, "wb") as f:
+                        f.write(bytes(self.bin))
+                self.report({"INFO"}, "File write successful!")
+                context.scene.frame_set(self.return_frame)
+                context.window_manager.progress_end()
+                context.window_manager.event_timer_remove(self._timer)
+                return {"FINISHED"}
+            
+            context.window_manager.progress_update(self.currentFrame - context.scene.frame_start)
+            return {"RUNNING_MODAL"}
+            
+        return {"PASS_THROUGH"}
+    
     def execute(self, context):
         FilePath = self.filepath
         filename, extension = os.path.splitext(self.filepath)
@@ -91,19 +121,44 @@ class osci_render_save(bpy.types.Operator, ImportHelper):
             extension = ".gpla"
             FilePath = FilePath + ".gpla"
         
-        self.report({"INFO"}, FilePath)
+        self.report({"INFO"}, f"Exporting to {FilePath}")
+        self.FilePath = FilePath
 
         if filename is not None and extension is not None:
-            fin = save_scene_to_file(bpy.context.scene, FilePath)
-            if fin == 0:
-                self.report({"INFO"}, "File write successful!")
-                return {"FINISHED"}
-            else:
-                self.report({"WARNING"}, "Something went wrong in saving the file")
+            self.return_frame = bpy.context.scene.frame_current
+            
+            bin = bytearray()
+            
+            # header
+            bin.extend(("GPLA    ").encode("utf8"))
+            bin.extend(GPLA_MAJOR.to_bytes(8, "little"))
+            bin.extend(GPLA_MINOR.to_bytes(8, "little"))
+            bin.extend(GPLA_PATCH.to_bytes(8, "little"))
+            
+            # file info
+            bin.extend(("FILE    ").encode("utf8"))
+            bin.extend(("fCount  ").encode("utf8"))
+            bin.extend((context.scene.frame_end - context.scene.frame_start + 1).to_bytes(8, "little"))
+            bin.extend(("fRate   ").encode("utf8"))
+            bin.extend(context.scene.render.fps.to_bytes(8, "little"))
+            bin.extend(("DONE    ").encode("utf8"))
+            
+            self.bin = bin
+            self.currentFrame = context.scene.frame_start
+            self.foa = []
+            self.ma = []
+            
+            wm = context.window_manager
+            if self._timer is not None:
+                wm.event_timer_remove(self._timer)
+            self._timer = wm.event_timer_add(0.01, window=context.window)
+            wm.modal_handler_add(self)
+            wm.progress_begin(0, context.scene.frame_end - context.scene.frame_start + 1)
+            return {'RUNNING_MODAL'}
         else:
             filename = None
             extension = None
-            self.report({"WARNING"}, "The filename or extension isn't right, action stopped for your own safety")
+            self.report({"WARNING"}, "The filename or extension isn't right, action cancelled")
             return {"CANCELLED"}
 
 
@@ -118,6 +173,25 @@ class osci_render_close(bpy.types.Operator):
 
 
 @persistent
+def save_scene_to_file(scene, bin, currentFrame, foa, ma):    
+    greaseCount = 0
+    allBaked = True
+    for object in bpy.data.objects:
+        if object.visible_get() and (object.type == 'GREASEPENCIL'):
+            for modifier in object.modifiers:
+                if modifier.type == 'LINEART':
+                    greaseCount += 1
+                    if modifier.is_baked == False:
+                        allBaked = False
+    
+    if allBaked and greaseCount > 0:
+        bin, currentFrame, foa, ma = get_allframes_binary(scene, bin, currentFrame, foa, ma)
+    else:
+        raise Exception("not everything is baked!")
+    
+    return (bin, currentFrame, foa, ma)
+
+@persistent
 def close_osci_render():
     global sock
     if sock is not None:
@@ -127,31 +201,62 @@ def close_osci_render():
         except socket.error as exp:
             sock = None
 
-def get_gpla_file_allframes(scene):
-    bin = bytearray()
+def get_allframes_binary(scene, frame_info, currentFrame, frames_objects_array, matrices_array):
+    increment = 10
+    frameStart = scene.frame_start
+    frameEnd = scene.frame_end
     
-    # header
-    bin.extend(("GPLA    ").encode("utf8"))
-    bin.extend(GPLA_MAJOR.to_bytes(8, "little"))
-    bin.extend(GPLA_MINOR.to_bytes(8, "little"))
-    bin.extend(GPLA_PATCH.to_bytes(8, "little"))
+    if (currentFrame == frameStart):
+        frames_objects_array = [[] for frame in range(frameEnd - frameStart + 1)]
+        matrices_array = [0 for i in range(frameEnd - frameStart + 1)]
+        
+        dg =  bpy.context.evaluated_depsgraph_get()
+        gp_array = [object.evaluated_get(dg) for object in bpy.data.objects if (object.visible_get() and object.type == 'GREASEPENCIL')]
+        for frame in range(frameStart, frameEnd + 1):
+            scene.frame_set(frame)
+            matrices_array[frame - frameStart] = bpy.context.scene.camera.matrix_world.inverted() @ gp_array[0].matrix_world
+        
+        for frame in range(frameStart, frameEnd + 1):
+            for obj in gp_array:
+                for layer in obj.data.layers:
+                    for stroke in layer.frames[frame - frameStart].drawing.strokes:
+                        frames_objects_array[frame - frameStart].append(stroke)
     
-    # file info
-    bin.extend(("FILE    ").encode("utf8"))
-    bin.extend(("fCount  ").encode("utf8"))
-    bin.extend((scene.frame_end - scene.frame_start + 1).to_bytes(8, "little"))
-    bin.extend(("fRate   ").encode("utf8"))
-    bin.extend(scene.render.fps.to_bytes(8, "little"))
-    bin.extend(("DONE    ").encode("utf8"))
+    lastFrame = currentFrame + increment
+    if lastFrame > frameEnd:
+        lastFrame = frameEnd + 1
     
-    for frame in range(0, scene.frame_end - scene.frame_start + 1):
-        scene.frame_set(frame + scene.frame_start)
-        bin.extend(get_frame_info_binary())
+    print(lastFrame)
+        
+    for f in range(currentFrame, lastFrame):
+        frame_info.extend(("FRAME   focalLen").encode("utf8"))
+        frame_info.extend(struct.pack("d", -0.05 * bpy.data.cameras[0].lens))
+        
+        frame_info.extend(("OBJECTS OBJECT  ").encode("utf8"))
+        
+        frame_info.extend(("MATRIX  ").encode("utf8"))
+        camera_space = matrices_array[f - frameStart]
+        frame_info.extend(struct.pack("dddddddddddddddd",
+            camera_space[0][0], camera_space[0][1], camera_space[0][2], camera_space[0][3], 
+            camera_space[1][0], camera_space[1][1], camera_space[1][2], camera_space[1][3], 
+            camera_space[2][0], camera_space[2][1], camera_space[2][2], camera_space[2][3], 
+            camera_space[3][0], camera_space[3][1], camera_space[3][2], camera_space[3][3]))
+        frame_info.extend(("DONE    STROKES ").encode("utf8"))
+        for stroke in frames_objects_array[f - frameStart]:
+            frame_info.extend(("STROKE  vertexCt").encode("utf8"))
+            frame_info.extend(len(stroke.points).to_bytes(8, "little"))
+        
+            frame_info.extend(("VERTICES").encode("utf8"))
+            for vert in stroke.points:
+                frame_info.extend(struct.pack("ddd", vert.position.x, vert.position.y, vert.position.z))
+            
+            # VERTICES
+            frame_info.extend(("DONE    DONE    ").encode("utf8"))
+        frame_info.extend(("DONE    DONE    DONE    DONE    ").encode("utf8"))
+        
+    return (frame_info, lastFrame, frames_objects_array, matrices_array)
     
-    bin.extend(("END GPLA").encode("utf8"))
-    
-    return bin
-    
+  
 def get_gpla_file(scene):
     bin = bytearray()
     
@@ -174,21 +279,6 @@ def get_gpla_file(scene):
     bin.extend(("END GPLA").encode("utf8"))
     
     return bin
-    
-@persistent
-def save_scene_to_file(scene, file_path):
-    return_frame = scene.frame_current
-    
-    bin = get_gpla_file_allframes(scene)
-    
-    if file_path is not None:
-        with open(file_path, "wb") as f:
-            f.write(bytes(bin))
-    else:
-        return 1
-    
-    scene.frame_set(return_frame)
-    return 0
 
 def get_frame_info_binary():
     frame_info = bytearray() 
@@ -319,7 +409,7 @@ def register():
 
 
 def unregister():
-    del bpy.types.Object.oscirenderPort
+    del bpy.types.Scene.oscirenderPort
     bpy.app.handlers.frame_change_pre.remove(send_scene_to_osci_render)
     bpy.app.handlers.depsgraph_update_post.remove(send_scene_to_osci_render)
     atexit.unregister(close_osci_render)
