@@ -200,24 +200,25 @@ void ShapeVoice::voiceKilled() {
 }
 
 // TODO this is the slowest part of the program - any way to improve this would help!
-void ShapeVoice::incrementShapeDrawing() {
+void ShapeVoice::locateShapeDrawing() {
     if (frame.size() <= 0) return;
-    double length = currentShape < frame.size() ? frame[currentShape]->len : 0.0;
-    frameDrawn += lengthIncrement;
-    shapeDrawn += lengthIncrement;
 
     // Need to skip all shapes that the lengthIncrement draws over.
     // This is especially an issue when there are lots of small lines being
     // drawn.
+    while (currentShape >= frame.size()) {
+        currentShape -= frame.size();
+    }
+    double length = frame[currentShape]->len;
     while (shapeDrawn > length) {
         shapeDrawn -= length;
         currentShape++;
-        if (currentShape >= frame.size()) {
-            currentShape = 0;
+        while (currentShape >= frame.size()) {
+            currentShape -= frame.size();
         }
+        length = frame[currentShape]->len;
         // POTENTIAL TODO: Think of a way to make this more efficient when iterating
         // this loop many times
-        length = frame[currentShape]->len;
     }
 }
 
@@ -392,7 +393,7 @@ void ShapeVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int star
             } else if (currentShape < frame.size()) {
                 auto& shape = frame[currentShape];
                 double length = shape->length();
-                double drawingProgress = length == 0.0 ? 1 : shapeDrawn / length;
+                double drawingProgress = (length == 0.0) ? 1 : (shapeDrawn / length);
                 channels = shape->nextVector(drawingProgress);
             }
             if (pendingNoteOn) pendingNoteOn = false;
@@ -439,18 +440,24 @@ void ShapeVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int star
         frequencyBuffer.setSample(0, i, (float) actualFrequency);
 
         if (!renderingSample) {
-            incrementShapeDrawing();
+            frameDrawn += lengthIncrement;
+            shapeDrawn += lengthIncrement;
+            locateShapeDrawing();
         }
 
         if (!renderingSample && frameDrawn >= frameLength) {
             double prevFrameLength = frameLength;
+            frameDrawn -= prevFrameLength;
+            shapeDrawn = frameDrawn;
             if (currentSound != nullptr && currentlyPlaying) {
                 if (currentSound->updateFrame(frame)) {
                     frameLength = currentSound->getFrameLength();
+                    shapeDrawn = 0;
+                    frameDrawn = 0;
+                    currentShape = 0;
                 }
             }
-            frameDrawn -= prevFrameLength;
-            currentShape = 0;
+            locateShapeDrawing();
 
             // The first sample of the new frame is the *next* sample.
             pendingFrameStart = true;
